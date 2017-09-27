@@ -1,0 +1,13 @@
+user:
+  email_work: 'vegakucik@lackmail.ru'
+  email: 'test.mopc_user@gmail.com'
+  pwd: 'qwer'
+  phone: '79653541864'
+free:
+  email: 'test.mopc_free@gmail.com'
+  pwd: 'qwer'
+  phone: '73439453277'
+company:
+  email: 'test.mopc@gmail.com'
+  pwd: 'testm0pc'
+  phone: '73439998348'
