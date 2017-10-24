@@ -1,4 +1,5 @@
+host: 'www.mopc.knife.railsc.ru'
 user: 'kolbin'
 pswd: 'geimHopIt8'
-port: '17012'
+port: '17288'
 #default 6432

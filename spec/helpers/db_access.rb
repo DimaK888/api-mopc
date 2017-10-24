@@ -1,33 +1,33 @@
 require 'pg'
 require 'pg_hstore'
 
-class PGRead
+module DBAccess
   def connect_db(dbname)
-    user = URL.include?('knife.railsc.ru') ? 'docker' : DBCONF['user']
-    pswd = URL.include?('knife.railsc.ru') ? '' : DBCONF['pswd']
-    port = URL.include?('knife.railsc.ru') ? DBCONF['port'] : '6432'
+    user = URL.include?('knife') ? 'docker' : DB_CONF['user']
+    pswd = URL.include?('knife') ? '' : DB_CONF['pswd']
+    port = URL.include?('knife') ? DB_CONF['port'] : '6432'
     PG::Connection.new(host, port, '', '', dbname, user, pswd)
   end
 
-  def db_access(dbname, fields = ['id'])
+  def db_access(dbname, field = 'id')
     response = connect_db(dbname).exec(self)
     if response.cmd_tuples.zero?
       'не найден'
     else
-      temp = []
-      fields.each do |field|
-        temp << value[0][field]
-      end
-      temp
+      response[0][field]
     end
   end
 
-  # ('SELECT users.id FROM public.users where email=123456').db_access(dbname)
+  def auth_token(user_id)
+    cmd = "SELECT url_auth_token FROM public.users where id=#{user_id}"
+    puts cmd
+    cmd.db_access(db_name('users'),'url_auth_token')
+  end
 
   def company_id(name)
     cmd = "SELECT id FROM public.companies where name='#{name}'"
     puts cmd
-    result(connect_db(db_name('companies')).exec(cmd))
+    cmd.db_access(db_name('companies'))
   end
 
   def user_id(value)
@@ -38,21 +38,15 @@ class PGRead
           "SELECT user_id FROM public.user_profiles where name='#{value}'"
         end
     puts cmd
-    result(connect_db(db_name('users')).exec(cmd))
+    cmd.db_access(db_name('users'))
   end
 
-  def order_(field, id)
+  def order_(id, field)
     cmd = "SELECT #{field} FROM orders.orders where id=#{id}"
-    connect_db(db_name('orders')).exec(cmd)[0][field]
+    cmd.db_access(db_name('orders'), field)
   end
 
   private
-
-  def result(value)
-    res = value.cmd_tuples.zero? ? 'не найден' : value[0]['id']
-    puts 'Result: ' + res.to_s
-    res
-  end
 
   def db_name(table)
     if URL.include?('pulscen.ru')
