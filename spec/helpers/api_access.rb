@@ -3,17 +3,9 @@ require 'json'
 
 module ApiAccess
 
-  def get(url, headers={})
+  def execute(opts = {})
     begin
-      RestClient.get(url, headers)
-    rescue RestClient::ExceptionWithResponse => err
-      return err.response
-    end
-  end
-
-  def post(url, payload, headers={})
-    begin
-      RestClient.post(url, payload, headers)
+      RestClient::Request.execute(opts)
     rescue RestClient::ExceptionWithResponse => err
       return err.response
     end

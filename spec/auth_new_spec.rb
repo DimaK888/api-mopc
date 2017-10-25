@@ -69,11 +69,11 @@ describe 'Авторизация в новом АПИ' do
       before(:all) do
         response[:users] = users_with_(email: email)
         user_id = users_with_(email: email).parse_body['users'][0]['id']
-        response[:user] = users_with_(user_id: user_id, token: new_auth.url_auth_token(user_id))
+        response[:user] = users_with_(user_id: user_id, user: email, pswd: pswd)
       end
 
       it 'email читаем' do
-        expect(response[:user]['user']['email']).not_to include('*')
+        expect(response[:user].parse_body['user']['email']).not_to include('*')
       end
 
       it 'данные пользователя по user_id (200)' do

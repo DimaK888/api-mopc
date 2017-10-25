@@ -20,13 +20,11 @@ module DBAccess
 
   def auth_token(user_id)
     cmd = "SELECT url_auth_token FROM public.users where id=#{user_id}"
-    puts cmd
     cmd.db_access(db_name('users'),'url_auth_token')
   end
 
   def company_id(name)
     cmd = "SELECT id FROM public.companies where name='#{name}'"
-    puts cmd
     cmd.db_access(db_name('companies'))
   end
 
@@ -37,7 +35,6 @@ module DBAccess
         else
           "SELECT user_id FROM public.user_profiles where name='#{value}'"
         end
-    puts cmd
     cmd.db_access(db_name('users'))
   end
 

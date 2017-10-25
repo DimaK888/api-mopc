@@ -19,13 +19,10 @@ module Authorization
     end
 
     def auth(email, password)
-      payload =
-        {session:
-          {login: email,
-           password: password
-          }
-        }
-      post(auth_url, payload)
+      payload = {
+        session: { login: email, password: password }
+      }
+      execute(method: :post, url: auth_url, payload: payload)
     end
   end
 

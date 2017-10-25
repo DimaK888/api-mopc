@@ -14,9 +14,21 @@ module UserInfo
     elsif opts[:user_id]
       url += "/#{opts[:user_id]}"
     end
-    if opts[:token]
-      url += "?u=#{opts[:token]}"
+
+    url += "?u=#{opts[:token]}" if opts[:token]
+
+    param = {
+        method: :get,
+        url: url
+    }
+
+    if opts[:user] && opts[:pswd]
+      param.merge!(
+        user: opts[:user],
+        password: opts[:pswd]
+      )
     end
-    get(url)
+
+    execute(param)
   end
 end
