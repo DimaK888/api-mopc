@@ -2,15 +2,15 @@ require 'spec_helper'
 
 include ApiAccess
 include Authorization
-include UserInfo
 
-new_auth = AuthNewApi.new
+auth = AuthNewApi.new
+users = Users.new
 response = {}
 
 describe 'Авторизация в новом АПИ' do
   shared_examples 'Авторизация с неверными данными' do |email, pswd|
     context 'Получим личные данные неавторизованного пользователя' do
-      before(:all) { response[:users] = users_with_(email: email) }
+      before(:all) { response[:users] = users.user_info("email=#{email}").request.perform }
 
       it 'response 200' do
         expect(response[:users].code).to eq(200)
@@ -22,10 +22,10 @@ describe 'Авторизация в новом АПИ' do
     end
 
     context 'Авторизация' do
-      before(:all) { response[:auth] = new_auth.auth(email, pswd) }
+      before(:all) { response[:auth] = auth.auth(email, pswd) }
 
       it 'response 404' do
-        expect(new_auth.auth(email, pswd).code).to eq(404)
+        expect(auth.auth(email, pswd).code).to eq(404)
       end
     end
 
@@ -35,9 +35,9 @@ describe 'Авторизация в новом АПИ' do
   shared_examples 'Авторизация с корректными данными' do |email, pswd|
     context 'Получим личные данные неавторизованного пользователя' do
       before(:all) do
-        response[:users] = users_with_(email: email)
-        user = users_with_(email: email).parse_body['users'][0]
-        response[:user] = users_with_(user_id: user['id'])
+        response[:users] = users.user_info("email=#{email}").request.perform
+        user = response[:users].parse_body['users'][0]
+        response[:user] = users.users(user['id']).request.perform
         response[:user_email] = user['email']
       end
 
@@ -59,7 +59,7 @@ describe 'Авторизация в новом АПИ' do
     end
 
     context 'Авторизация' do
-      before(:all) { response[:auth] = new_auth.auth(email, pswd) }
+      before(:all) { response[:auth] = auth.auth(email, pswd) }
       it 'response 200' do
         expect(response[:auth].code).to eq(200)
       end
@@ -67,9 +67,9 @@ describe 'Авторизация в новом АПИ' do
 
     context 'Получим личные данные пользователя' do
       before(:all) do
-        response[:users] = users_with_(email: email)
-        user_id = users_with_(email: email).parse_body['users'][0]['id']
-        response[:user] = users_with_(user_id: user_id, user: email, pswd: pswd)
+        response[:users] = users.user_info("email=#{email}").request.perform
+        user_id = response[:users].parse_body['users'][0]['id']
+        response[:user] = users.users(user_id).signed_request.perform
       end
 
       it 'email читаем' do
@@ -81,7 +81,10 @@ describe 'Авторизация в новом АПИ' do
       end
     end
 
-    after(:all) { response.clear }
+    after(:all) do
+      response.clear
+      auth.log_out
+    end
   end
 
   context 'под не существующим email' do

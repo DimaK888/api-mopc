@@ -2,10 +2,9 @@ require_relative '../spec/helpers/api_access'
 require 'users'
 
 include ApiAccess
-include UserInfo
 
-module Company
+class Company
   def user_company_list_url(user_id)
-    users_url + "/#{user_id}/companies"
+    Users.new.user_companies(user_id)
   end
 end

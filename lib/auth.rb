@@ -2,7 +2,6 @@ require_relative '../spec/helpers/api_access'
 require_relative '../spec/helpers/db_access'
 
 include ApiAccess
-include DBAccess
 
 module Authorization
   class AuthNewApi
@@ -10,23 +9,25 @@ module Authorization
       "#{URL}/api/v1/clients"
     end
 
-    def url_auth_token(user_id)
-      auth_token(user_id)
-    end
-
-    def signed_url(url, user_id)
-      url + "?u=#{auth_token(user_id)}"
+    def dont_check_signature(url)
+      url + '&check_signature=0'
     end
 
     def auth(email, password)
       payload = {
         session: { login: email, password: password }
       }
-      execute(method: :post, url: auth_url, payload: payload)
+      option = {method: :post, url: auth_url, payload: payload}
+      req = option.request.perform
+      Token.token = req.parse_body['client']
+      req
+    end
+
+    def log_out
+      Token.token = {}
     end
   end
 
   class AuthOldApi
-
   end
 end
