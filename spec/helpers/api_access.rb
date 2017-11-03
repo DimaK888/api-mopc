@@ -20,6 +20,17 @@ module ApiAccess
     end
   end
 
+  def dont_check_signature
+    if self.class == Hash
+      url = "#{self[:url]}&check_signature=0"
+      self.merge!({url: url})
+    elsif self.class == String
+      "#{self}&check_signature=0"
+    else
+      '&check_signature=0'
+    end
+  end
+
   def perform
     begin
       self.execute

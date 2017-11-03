@@ -9,10 +9,6 @@ module Authorization
       "#{URL}/api/v1/clients"
     end
 
-    def dont_check_signature
-      "#{self}&check_signature=0"
-    end
-
     def auth(email, password)
       option = {
         method: :post,

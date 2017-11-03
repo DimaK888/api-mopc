@@ -5,28 +5,25 @@ include Authorization
 
 auth = AuthNewApi.new
 users = Users.new
-response = {}
 
 describe 'Авторизация в новом АПИ' do
   shared_examples 'Авторизация с неверными данными' do |email, pswd|
     context 'Получим личные данные неавторизованного пользователя' do
-      before(:all) { response[:users] = users.user_info("email=#{email}").request.perform }
+      before(:all) do
+        @user_info = users.user_info("email=#{email}").request.perform
+      end
 
       it 'пользоватей с таким email нет (200)' do
-        expect(response[:users].code).to eq(200)
-        expect(response[:users].parse_body['users']).to be_empty
+        expect(@user_info.code).to eq(200)
+        expect(@user_info.parse_body['users']).to be_empty
       end
     end
 
     context 'Авторизация' do
-      before(:all) { response[:auth] = auth.auth(email, pswd) }
-
       it 'response 404' do
         expect(auth.auth(email, pswd).code).to eq(404)
       end
     end
-
-    after(:all) { response.clear }
   end
 
   shared_examples 'Авторизация с корректными данными' do |email, pswd|
