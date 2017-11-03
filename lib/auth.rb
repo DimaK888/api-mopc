@@ -19,7 +19,22 @@ module Authorization
       }
       option = {method: :post, url: auth_url, payload: payload}
       req = option.request.perform
-      Token.token = req.parse_body['client']
+      unless req.parse_body['client'].nil?
+        Token.token = req.parse_body['client']
+      end
+      req
+    end
+
+    def refresh_token
+      option = {
+        method: :post,
+        url: "#{auth_url}/#{Token.token['access_id']}/tokens",
+        payload: {'refresh_token' => Token.token['refresh_token']}
+      }
+      req = option.request.perform
+      unless req.parse_body['client'].nil?
+        Token.token = req.parse_body['client']
+      end
       req
     end
 
