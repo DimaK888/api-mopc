@@ -24,6 +24,8 @@ RSpec.configure do |config|
   end
 end
 
+# RestClient.proxy = 'http://127.0.0.1:8888'
+
 AllureRSpec.configure do |config|
   config.output_dir = 'allure'
   config.clean_dir = false

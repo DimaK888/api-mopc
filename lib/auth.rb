@@ -9,15 +9,21 @@ module Authorization
       "#{URL}/api/v1/clients"
     end
 
-    def dont_check_signature(url)
-      url + '&check_signature=0'
+    def dont_check_signature
+      "#{self}&check_signature=0"
     end
 
     def auth(email, password)
-      payload = {
-        session: { login: email, password: password }
+      option = {
+        method: :post,
+        url: auth_url,
+        payload: {
+          session: {
+            login: email,
+            password: password
+          }
+        }
       }
-      option = {method: :post, url: auth_url, payload: payload}
       req = option.request.perform
       unless req.parse_body['client'].nil?
         Token.token = req.parse_body['client']
@@ -29,7 +35,7 @@ module Authorization
       option = {
         method: :post,
         url: "#{auth_url}/#{Token.token['access_id']}/tokens",
-        payload: {'refresh_token' => Token.token['refresh_token']}
+        payload: {refresh_token: Token.token['refresh_token']}
       }
       req = option.request.perform
       unless req.parse_body['client'].nil?
@@ -44,5 +50,11 @@ module Authorization
   end
 
   class AuthOldApi
+  end
+
+  class Token
+    class << self
+      attr_accessor :token
+    end
   end
 end

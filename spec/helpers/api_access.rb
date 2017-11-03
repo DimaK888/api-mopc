@@ -2,6 +2,8 @@ require 'rest-client'
 require 'api-auth'
 require 'json'
 
+require_relative '../../lib/auth'
+
 module ApiAccess
   def request
     RestClient::Request.new(self)
@@ -28,11 +30,5 @@ module ApiAccess
 
   def parse_body
     JSON.parse(self.body)
-  end
-
-  class Token
-    class << self
-      attr_accessor :token
-    end
   end
 end
