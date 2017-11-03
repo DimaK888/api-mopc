@@ -10,10 +10,10 @@ describe 'Авторизация в новом АПИ' do
   shared_examples 'Авторизация с неверными данными' do |email, pswd|
     context 'Получим личные данные неавторизованного пользователя' do
       before(:all) do
-        @user_info = users.user_info("email=#{email}").request.perform
+        @user_info = users.user_info(email: email).request.perform
       end
 
-      it 'пользоватей с таким email нет (200)' do
+      it "пользователя #{email} не существует (200)" do
         expect(@user_info.code).to eq(200)
         expect(@user_info.parse_body['users']).to be_empty
       end

@@ -9,6 +9,15 @@ module Authorization
       "#{URL}/api/v1/clients"
     end
 
+    def basic_auth(email, password)
+      self.merge(
+        {
+          user: email,
+          password: password
+        }
+      ).request.perform
+    end
+
     def auth(email, password)
       option = {
         method: :post,
