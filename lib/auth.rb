@@ -1,5 +1,4 @@
 require_relative '../spec/helpers/api_access'
-require_relative '../spec/helpers/db_access'
 
 include ApiAccess
 

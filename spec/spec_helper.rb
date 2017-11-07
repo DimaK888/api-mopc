@@ -9,8 +9,7 @@ Dir['helpers/*.rb'].each { |file| require file[4..-1] }
 Dir['**/lib/**/*.rb'].each { |file| require file[4..-1] }
 
 ::CREDENTIALS = YAML.safe_load(File.read('lib/configs/credentials.yml'))
-::DB_CONF = YAML.safe_load(File.read('lib/configs/db_connect.yml'))
-::URL = DB_CONF['host']
+::URL = YAML.safe_load(File.read('lib/configs/env.yml'))['url']
 
 RSpec.configure do |config|
   config.include AllureRSpec::Adaptor
