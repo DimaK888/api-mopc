@@ -1,6 +1,5 @@
 require 'spec_helper'
 
-include ApiAccess
 include Authorization
 
 auth = AuthNewApi.new

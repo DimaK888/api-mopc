@@ -1,7 +1,3 @@
-require_relative '../spec/helpers/api_access'
-
-include ApiAccess
-
 module Authorization
   class AuthNewApi
     def auth_url
@@ -17,13 +13,13 @@ module Authorization
       ).request.perform
     end
 
-    def auth(email, password)
+    def auth(login, password)
       option = {
         method: :post,
         url: auth_url,
         payload: {
           session: {
-            login: email,
+            login: login,
             password: password
           }
         }

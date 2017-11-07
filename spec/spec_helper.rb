@@ -5,8 +5,13 @@ require 'faker'
 require 'ryba'
 require 'yaml'
 
-Dir['helpers/*.rb'].each { |file| require file[4..-1] }
+require 'helpers/api_access'
+require 'helpers/application_helper'
+
 Dir['**/lib/**/*.rb'].each { |file| require file[4..-1] }
+
+include ApiAccess
+include ApplicationHelper
 
 ::CREDENTIALS = YAML.safe_load(File.read('lib/configs/credentials.yml'))
 ::URL = YAML.safe_load(File.read('lib/configs/env.yml'))['url']

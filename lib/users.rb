@@ -1,7 +1,3 @@
-require_relative '../spec/helpers/api_access'
-
-include ApiAccess
-
 class Users
   def users_url
     "#{URL}/api/v1/users"
@@ -28,5 +24,9 @@ class Users
 
   def user_companies(user_id)
     {method: :get, url: "#{users_url}/#{user_id}/companies"}
+  end
+
+  def user_registration(arg)
+    {method: :post, url: users_url, payload: arg}
   end
 end
