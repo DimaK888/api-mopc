@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 include Authorization
 
 auth = AuthNewApi.new
@@ -36,16 +34,15 @@ describe 'Регистрация пользователя api/v1/users' do
     end
   end
 
-  shared_examples 'unsuccessfully post api/v1/users' do |param|
+  shared_examples 'unsuccessfully post api/v1/users' do |param, error|
     before(:all) { @response = users.user_registration(param).request.perform }
 
     it 'регистрация прошла с ошибкой' do
       expect(@response.code).to eql(422)
     end
 
-    after(:all) do
-      body = @response.parse_body
-      puts body['errors'] if body['errors']
+    it 'текст ошибки соответсвует ожиданиям' do
+      expect(@response.parse_body['errors'][0]). to include(error)
     end
   end
 
@@ -109,7 +106,7 @@ describe 'Регистрация пользователя api/v1/users' do
                          profile_attributes: {
                            name: Ryba::Name.full_name
                          }
-                       }
+                       }, {'email' => 'уже занят'}
     end
 
     context "Повторно зарегистрируем пользователя #{auth_data[:phone]}" do
@@ -120,7 +117,7 @@ describe 'Регистрация пользователя api/v1/users' do
                          profile_attributes: {
                            name: Ryba::Name.full_name
                          }
-                       }
+                       }, {'phone' => 'уже занят'}
     end
   end
 
@@ -156,6 +153,35 @@ describe 'Регистрация пользователя api/v1/users' do
                        profile_attributes: {
                          name: Ryba::Name.full_name
                        }
+                     }, {'email' => 'уже занят'}
+  end
+
+  context 'Регистрация по паре логин/пароль' do
+    context 'Передаем только email & password' do
+      include_examples 'unsuccessfully post api/v1/users',
+                       {
+                         email: Faker::Internet.email,
+                         password: 'qwer'
+                       }, {'profile.name'=>'ФИО может содержать только буквы, точки и дефисы'}
+    end
+
+    context 'Передаем только phone & password' do
+      include_examples 'unsuccessfully post api/v1/users',
+                       {
+                           phone: random_mobile_phone,
+                           password: 'qwer'
+                       }, {'profile.name'=>'ФИО может содержать только буквы, точки и дефисы'}
+    end
+  end
+
+  context 'Ничего не передаем' do
+    include_examples 'unsuccessfully post api/v1/users',
+                     {},
+                     {
+                       'email'=>'Неправильный email',
+                       'primary_provider'=>'не может быть пустым',
+                       'profile.name'=>'ФИО может содержать только буквы, точки и дефисы',
+                       'password'=>'Пароль слишком короткий'
                      }
   end
 

@@ -42,4 +42,8 @@ module ApiAccess
   def parse_body
     JSON.parse(self.body)
   end
+
+  def null
+    nil
+  end
 end

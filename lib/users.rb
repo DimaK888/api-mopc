@@ -18,8 +18,8 @@ class Users
     {method: :get, url: @url}
   end
 
-  def user_update(user_id)
-    {method: :put, url: "#{users_url}/#{user_id}"}
+  def user_update(payload, user_id = Token.token['user_id'])
+    {method: :put, url: "#{users_url}/#{user_id}", payload: payload}
   end
 
   def user_companies(user_id)
