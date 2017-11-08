@@ -32,11 +32,9 @@ module ApiAccess
   end
 
   def perform
-    begin
-      self.execute
-    rescue RestClient::ExceptionWithResponse => err
-      return err.response
-    end
+    self.execute
+  rescue RestClient::ExceptionWithResponse => err
+    return err.response
   end
 
   def parse_body

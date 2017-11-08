@@ -31,6 +31,10 @@ module Authorization
       req
     end
 
+    def auth_as(role)
+      auth(CREDENTIALS[role]['email'], CREDENTIALS[role]['pswd'])
+    end
+
     def refresh_token
       option = {
         method: :post,

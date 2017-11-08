@@ -15,9 +15,10 @@ describe 'Изменение пользовательских данных api/v
     }
     users.user_registration(param).request.perform
     auth.auth(email, 'qwer')
+    @user_id = Token.token['user_id']
   end
 
-  context 'смена пользовательских данных' do
+  context 'владельцем' do
     before(:all) do
       @param = {
         name: Ryba::Name.full_name,
@@ -94,4 +95,41 @@ describe 'Изменение пользовательских данных api/v
         to eql(@param[:profile_attributes][:show_email])
     end
   end
+
+  context 'неавторизованным пользователем' do
+    before(:all) do
+      param = {name: Ryba::Name.full_name}
+      @changes = users.user_update(param, @user_id).request.perform
+    end
+
+    it '403' do
+      expect(@changes.code).to eql(403)
+    end
+  end
+
+  context 'сторонним авторизованным' do
+    before(:all) do
+      auth.auth_as('user')
+      param = {name: Ryba::Name.full_name}
+      @changes = users.user_update(param, @user_id).signed_request.perform
+    end
+
+    it '403' do
+      expect(@changes.code).to eql(403)
+    end
+  end
+
+  context 'авторизованным админом' do
+    before(:all) do
+      auth.auth_as('company')
+      param = {name: Ryba::Name.full_name}
+      @changes = users.user_update(param, @user_id).signed_request.perform
+    end
+
+    it '403' do
+      expect(@changes.code).to eql(403)
+    end
+  end
+
+  after(:all) { auth.log_out }
 end
