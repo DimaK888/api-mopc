@@ -23,13 +23,12 @@ describe 'Регистрация пользователя api/v1/users' do
           signed_request.perform.
           parse_body['user']
 
-        login[0] = '+7' if login[0] == '8'
-        @login = login.delete('- ')
+        @login = users.expected_phone(login)
       end
 
       it 'успешно!' do
         expect(Token.token).not_to be_empty
-        expect(@new_user_email.has_value?(@login)).to be(true)
+        expect(@new_user_email).to have_value(@login)
       end
     end
   end
@@ -59,12 +58,7 @@ describe 'Регистрация пользователя api/v1/users' do
 
   context 'Зарегистрация пользователя по телефону' do
     auth_data = {phone: random_mobile_phone, pswd: 'qwer'}
-    email = "#{auth_data[:phone].delete('- ')}@pulscen.ru"
-    if email[0] == '8'
-      email[0] = '7'
-    elsif email[0] == '+'
-      email[0] = ''
-    end
+    email = "#{users.expected_phone(auth_data[:phone]).delete('+')}@pulscen.ru"
     context "#{auth_data[:phone]} без поля contacts" do
       include_examples 'successfully post api/v1/users',
                        {

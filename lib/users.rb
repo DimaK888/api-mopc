@@ -29,4 +29,9 @@ class Users
   def user_registration(arg)
     {method: :post, url: users_url, payload: arg}
   end
+
+  def expected_phone(phone)
+    phone[0] = '+7' if phone[0] == '8'
+    phone.delete('- ')
+  end
 end
