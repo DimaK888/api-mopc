@@ -45,7 +45,7 @@ describe 'Регистрация пользователя api/v1/users' do
     end
   end
 
-  context 'Зарегистрация пользователя по email' do
+  context 'Регистрация пользователя по email' do
     include_examples 'successfully post api/v1/users',
                      {
                        email: Faker::Internet.email,
@@ -56,7 +56,7 @@ describe 'Регистрация пользователя api/v1/users' do
                      }
   end
 
-  context 'Зарегистрация пользователя по телефону' do
+  context 'Регистрация пользователя по телефону' do
     auth_data = {phone: random_mobile_phone, pswd: 'qwer'}
     email = "#{users.expected_phone(auth_data[:phone]).delete('+')}@pulscen.ru"
     context "#{auth_data[:phone]} без поля contacts" do
@@ -115,7 +115,22 @@ describe 'Регистрация пользователя api/v1/users' do
     end
   end
 
-  context 'Зарегистрация пользователя по email' do
+  context 'Регистрация пользователя по служебному email' do
+    include_examples 'unsuccessfully post api/v1/users',
+                     {
+                       email: "#{users.expected_phone.delete('+')}@pulscen.ru",
+                       password: 'qwer',
+                       profile_attributes: {
+                         name: Ryba::Name.full_name
+                       }
+                     },
+                     {
+                       'base' => 'отсутствуют контактные данные',
+                       'primary_provider' => 'не может быть пустым'
+                     }
+  end
+
+  context 'Регистрация пользователя по email' do
     include_examples 'successfully post api/v1/users',
                      {
                        email: Faker::Internet.email,

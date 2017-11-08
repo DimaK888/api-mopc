@@ -28,7 +28,7 @@ describe 'Изменение пользовательских данных api/v
           birthday: Date.new(rand(1900..2100), rand(1..12), rand(1..28)).to_s,
           city_id: Region.new.city_by_ip[:city_id],
           about: Faker::Lorem.paragraph,
-          contacts: users.expected_phone(random_mobile_phone),
+          contacts: users.expected_phone,
           position: Faker::StarWars.character,
           show_email: [true, false].sample,
           additional_contacts: Faker::Lorem.paragraph
