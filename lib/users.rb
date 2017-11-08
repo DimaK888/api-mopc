@@ -3,7 +3,7 @@ class Users
     "#{URL}/api/v1/users"
   end
 
-  def users(user_id)
+  def users(user_id = Token.token['user_id'])
     {method: :get, url: "#{users_url}/#{user_id}"}
   end
 
