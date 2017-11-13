@@ -26,8 +26,8 @@ class Users
     {method: :get, url: "#{users_url}/#{user_id}/companies"}
   end
 
-  def user_registration(arg)
-    {method: :post, url: users_url, payload: arg}
+  def user_registration(param)
+    {method: :post, url: users_url, payload: param}
   end
 
   def expected_phone(phone = random_mobile_phone)

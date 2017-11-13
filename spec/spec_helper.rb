@@ -5,9 +5,7 @@ require 'faker'
 require 'ryba'
 require 'yaml'
 
-require 'helpers/api_access'
-require 'helpers/application_helper'
-
+Dir['**/spec/helpers/*.rb'].each { |file| require file[5..-1] }
 Dir['**/lib/**/*.rb'].each { |file| require file[4..-1] }
 
 include ApiAccess
@@ -23,6 +21,7 @@ RSpec.configure do |config|
   config.tty = true
   config.example_status_persistence_file_path = 'examples.txt'
   config.expect_with :rspec
+  config.raise_errors_for_deprecations!
   config.mock_with :rspec do |mocks|
     mocks.verify_partial_doubles = true
   end

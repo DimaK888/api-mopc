@@ -10,15 +10,16 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
     context 'Получим личные данные неавторизованного пользователя' do
       let(:user_info) { users.user_info(email: email).request }
 
-      it "пользователя #{email} не существует (200)" do
-        expect(user_info.code).to eq(200)
+      it { expect(user_info).to response_code(200) }
+
+      it "пользователя #{email} не существует" do
         expect(user_info.parse_body['users']).to be_empty
       end
     end
 
     context 'Авторизация' do
       it 'response 404' do
-        expect(auth.auth(email, pswd).code).to eq(404)
+        expect(auth.auth(email, pswd)).to response_code(404)
       end
     end
   end
@@ -36,14 +37,14 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
 
       it 'неавторизованный запрос users/{user_id} (403)' do
         expect(
-          users.users(Tokens.user_id).request(sign: false).code
-        ).to be(403)
+          users.users(Tokens.user_id).request(sign: false)
+        ).to response_code(403)
       end
 
       it 'авторизованный запрос users/{user_id} (200)' do
         expect(
-          users.users(Tokens.user_id).request.code
-        ).to be(200)
+          users.users(Tokens.user_id).request
+        ).to response_code(200)
       end
 
       context 'Обновим токен' do
@@ -58,8 +59,8 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
 
         it 'авторизация сохранена' do
           expect(
-            users.users(Tokens.user_id).request.code
-          ).to be(200)
+            users.users(Tokens.user_id).request
+          ).to response_code(200)
         end
       end
       after(:all) { auth.log_out }

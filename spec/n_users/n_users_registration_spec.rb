@@ -13,8 +13,8 @@ describe 'Регистрация пользователя POST(/users)' do
   shared_examples 'successfully post api/v1/users' do |param|
     it 'регистрация прошла успешно' do
       expect(
-        users.user_registration(param).request(sign: false).code
-      ).to be(200)
+        users.user_registration(param).request(sign: false)
+      ).to response_code(200)
     end
 
     context 'авторизация прошла' do
@@ -41,7 +41,7 @@ describe 'Регистрация пользователя POST(/users)' do
     before(:all) { @response = users.user_registration(param).request(sign: false) }
 
     it 'регистрация прошла с ошибкой' do
-      expect(@response.code).to eql(422)
+      expect(@response).to response_code(422)
     end
   end
 

@@ -25,9 +25,7 @@ describe 'Просмотр пользовательских данных GET(/us
     context 'api/v1/users/{user_id}' do
       let(:res_by_user_id) { users.users(@user_id).request }
 
-      it 'response code 200' do
-        expect(res_by_user_id.code).to eql(200)
-      end
+      it { expect(res_by_user_id).to response_code(200) }
 
       it "show_email?=#{show}" do
         expect(res_by_user_id.parse_body['user']['email'].include?('*'))
@@ -49,9 +47,7 @@ describe 'Просмотр пользовательских данных GET(/us
     context 'api/v1/users?email={email}' do
       let(:res_by_email) { users.user_info(email: @email).request }
 
-      it 'response code 200' do
-        expect(res_by_email.code).to eql(200)
-      end
+      it { expect(res_by_email).to response_code(200) }
 
       it "show_email?=#{show}" do
         expect(res_by_email.parse_body['users'][0]['email'].include?('*'))
@@ -90,11 +86,11 @@ describe 'Просмотр пользовательских данных GET(/us
     let(:res_by_email) { users.user_info(email: @email).request(sign: false) }
 
     it '/{user_id} 403' do
-      expect(res_by_user_id.code).to eql(403)
+      expect(res_by_user_id).to response_code(403)
     end
 
     it '?email={email} 200' do
-      expect(res_by_email.code).to eql(200)
+      expect(res_by_email).to response_code(200)
     end
 
     it '?email={email} show_email?=false' do

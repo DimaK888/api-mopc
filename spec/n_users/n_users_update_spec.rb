@@ -102,9 +102,7 @@ describe 'Изменение пользовательских данных POST(
       @changes = users.user_update(param, @user_id).request
     end
 
-    it '403' do
-      expect(@changes.code).to eql(403)
-    end
+    it { expect(@changes).to response_code(403) }
   end
 
   context 'когда админ' do
@@ -114,9 +112,7 @@ describe 'Изменение пользовательских данных POST(
       @changes = users.user_update(param, @user_id).request
     end
 
-    it '403' do
-      expect(@changes.code).to eql(403)
-    end
+    it { expect(@changes).to response_code(403) }
   end
 
   context 'когда неавторизован' do
@@ -126,9 +122,7 @@ describe 'Изменение пользовательских данных POST(
       @changes = users.user_update(param, @user_id).request(sign: false)
     end
 
-    it '403' do
-      expect(@changes.code).to eql(403)
-    end
+    it { expect(@changes).to response_code(403) }
   end
 
   after(:all) { auth.log_out }
