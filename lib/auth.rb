@@ -10,7 +10,7 @@ module Authorization
           user: email,
           password: password
         }
-      ).request.perform
+      ).request(sign: false)
     end
 
     def auth(login, password)
@@ -24,7 +24,7 @@ module Authorization
           }
         }
       }
-      req = option.request.perform
+      req = option.request(sign: false)
       unless req.parse_body['client'].nil?
         Tokens.init(req.parse_body['client'])
       end
@@ -41,7 +41,7 @@ module Authorization
         url: "#{auth_url}/#{Tokens.access_id}/tokens",
         payload: {refresh_token: Tokens.refresh_token}
       }
-      req = option.request.perform
+      req = option.request
       unless req.parse_body['client'].nil?
         Tokens.init(req.parse_body['client'])
       end

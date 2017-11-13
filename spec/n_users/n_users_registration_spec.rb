@@ -2,17 +2,22 @@ include Authorization
 
 auth = AuthNewApi.new
 users = Users.new
+phone = random_mobile_phone
+auth_data = {
+  phone: phone,
+  email: "#{users.expected_phone(phone).delete('+')}@pulscen.ru",
+  pswd: 'qwer'
+}
 
-describe 'Регистрация пользователя api/v1/users' do
+describe 'Регистрация пользователя POST(/users)' do
   shared_examples 'successfully post api/v1/users' do |param|
     it 'регистрация прошла успешно' do
       expect(
-        users.user_registration(param).
-          request.perform.code
+        users.user_registration(param).request(sign: false).code
       ).to be(200)
     end
 
-    context 'Авторизация нового пользователя' do
+    context 'авторизация прошла' do
       before(:all) do
         auth.log_out
         login = param[:email] || param[:phone]
@@ -20,8 +25,7 @@ describe 'Регистрация пользователя api/v1/users' do
 
         user_id = Tokens.user_id
         @new_user_email = users.users(user_id).
-          signed_request.perform.
-          parse_body['user']
+          request.parse_body['user']
 
         @login = users.expected_phone(login)
       end
@@ -33,19 +37,15 @@ describe 'Регистрация пользователя api/v1/users' do
     end
   end
 
-  shared_examples 'unsuccessfully post api/v1/users' do |param, error|
-    before(:all) { @response = users.user_registration(param).request.perform }
+  shared_examples 'unsuccessfully post api/v1/users' do |param|
+    before(:all) { @response = users.user_registration(param).request(sign: false) }
 
     it 'регистрация прошла с ошибкой' do
       expect(@response.code).to eql(422)
     end
-
-    it 'текст ошибки соответсвует ожиданиям' do
-      expect(@response.parse_body['errors'][0]). to include(error)
-    end
   end
 
-  context 'Регистрация пользователя по email' do
+  context 'когда регистрируем по email' do
     include_examples 'successfully post api/v1/users',
                      {
                        email: Faker::Internet.email,
@@ -56,10 +56,8 @@ describe 'Регистрация пользователя api/v1/users' do
                      }
   end
 
-  context 'Регистрация пользователя по телефону' do
-    auth_data = {phone: random_mobile_phone, pswd: 'qwer'}
-    email = "#{users.expected_phone(auth_data[:phone]).delete('+')}@pulscen.ru"
-    context "#{auth_data[:phone]} без поля contacts" do
+  context 'когда регистрируем по телефону' do
+    context 'без указания поля contacts' do
       include_examples 'successfully post api/v1/users',
                        {
                          phone: auth_data[:phone],
@@ -70,7 +68,7 @@ describe 'Регистрация пользователя api/v1/users' do
                        }
     end
 
-    context 'вводим поля phone & profile[contacts]' do
+    context 'с полями phone & profile[contacts]' do
       include_examples 'successfully post api/v1/users',
                        {
                          phone: random_mobile_phone,
@@ -82,8 +80,7 @@ describe 'Регистрация пользователя api/v1/users' do
                        }
       context 'Получим информацию о пользователе' do
         before(:all) do
-          @info = users.users(Tokens.user_id).
-            signed_request.perform.parse_body['user']
+          @info = users.users(Tokens.user_id).request.parse_body['user']
         end
 
         it 'phone != profile[contacts]' do
@@ -92,18 +89,29 @@ describe 'Регистрация пользователя api/v1/users' do
       end
     end
 
-    context "Зарегистрируем пользователя #{email}" do
+    context 'когда регистрируем по example@pulscen.ru' do
       include_examples 'unsuccessfully post api/v1/users',
                        {
-                         email: email,
+                         email: "#{users.expected_phone.delete('+')}@pulscen.ru",
+                         password: 'qwer',
+                         profile_attributes: {
+                             name: Ryba::Name.full_name
+                         }
+                       }
+    end
+
+    context 'когда регистрируем по занятому example@pulscen.ru' do
+      include_examples 'unsuccessfully post api/v1/users',
+                       {
+                         email: auth_data[:email],
                          password: auth_data[:pswd],
                          profile_attributes: {
                            name: Ryba::Name.full_name
                          }
-                       }, {'email' => 'уже занят'}
+                       }
     end
 
-    context "Повторно зарегистрируем пользователя #{auth_data[:phone]}" do
+    context "когда регистрируем по занятому телефону #{auth_data[:phone]}" do
       include_examples 'unsuccessfully post api/v1/users',
                        {
                          phone: auth_data[:phone],
@@ -111,37 +119,11 @@ describe 'Регистрация пользователя api/v1/users' do
                          profile_attributes: {
                            name: Ryba::Name.full_name
                          }
-                       }, {'phone' => 'уже занят'}
+                       }
     end
   end
 
-  context 'Регистрация пользователя по служебному email' do
-    include_examples 'unsuccessfully post api/v1/users',
-                     {
-                       email: "#{users.expected_phone.delete('+')}@pulscen.ru",
-                       password: 'qwer',
-                       profile_attributes: {
-                         name: Ryba::Name.full_name
-                       }
-                     },
-                     {
-                       'base' => 'отсутствуют контактные данные',
-                       'primary_provider' => 'не может быть пустым'
-                     }
-  end
-
-  context 'Регистрация пользователя по email' do
-    include_examples 'successfully post api/v1/users',
-                     {
-                       email: Faker::Internet.email,
-                       password: 'qwer',
-                       profile_attributes: {
-                         name: Ryba::Name.full_name
-                       }
-                     }
-  end
-
-  context 'Регистрация пользователя (email & phone)' do
+  context 'когда регистрируем с указанием email и phone' do
     include_examples 'successfully post api/v1/users',
                      {
                        email: Faker::Internet.email,
@@ -152,46 +134,47 @@ describe 'Регистрация пользователя api/v1/users' do
                          contacts: random_mobile_phone
                        }
                      }
+    context 'primary_provider: email' do
+      before(:all) do
+        @user_info = users.users(Tokens.user_id).request.parse_body['user']
+      end
+
+      it { expect(@user_info['primary_provider']).to eql('email') }
+    end
   end
 
-  context 'Регистрация существующего пользователя (email)' do
+  context 'когда пользователь(email) существует' do
     include_examples 'unsuccessfully post api/v1/users',
                      {
                        email: CREDENTIALS['company']['email'],
                        password: 'qwer',
                        profile_attributes: {
-                         name: Ryba::Name.full_name
+                           name: Ryba::Name.full_name
                        }
-                     }, {'email' => 'уже занят'}
+                     }
   end
 
-  context 'Регистрация по паре логин/пароль' do
-    context 'Передаем только email & password' do
+  context 'когда регистрируем без указания имени' do
+    context 'только email & password' do
       include_examples 'unsuccessfully post api/v1/users',
                        {
                          email: Faker::Internet.email,
                          password: 'qwer'
-                       }, {'profile.name'=>'ФИО может содержать только буквы, точки и дефисы'}
+                       }
     end
 
-    context 'Передаем только phone & password' do
+    context 'только phone & password' do
       include_examples 'unsuccessfully post api/v1/users',
                        {
-                           phone: random_mobile_phone,
-                           password: 'qwer'
-                       }, {'profile.name'=>'ФИО может содержать только буквы, точки и дефисы'}
+                         phone: random_mobile_phone,
+                         password: 'qwer'
+                       }
     end
   end
 
-  context 'Ничего не передаем' do
+  context 'когда ничего не передаем' do
     include_examples 'unsuccessfully post api/v1/users',
-                     {},
-                     {
-                       'email'=>'Неправильный email',
-                       'primary_provider'=>'не может быть пустым',
-                       'profile.name'=>'ФИО может содержать только буквы, точки и дефисы',
-                       'password'=>'Пароль слишком короткий'
-                     }
+                     {}
   end
 
   after(:all) { auth.log_out }

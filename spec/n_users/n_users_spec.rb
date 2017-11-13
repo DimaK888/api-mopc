@@ -3,7 +3,7 @@ include Authorization
 auth = AuthNewApi.new
 users = Users.new
 
-describe 'Просмотр пользовательских данных api/v1/users' do
+describe 'Просмотр пользовательских данных GET(/users)' do
   before(:all) do
     @email = Faker::Internet.email
     param = {
@@ -14,7 +14,7 @@ describe 'Просмотр пользовательских данных api/v1/
         name: Ryba::Name.full_name
       }
     }
-    users.user_registration(param).request.perform
+    users.user_registration(param).request
     auth.auth(@email, 'qwer')
     @user_id ||= Tokens.user_id
   end
@@ -23,87 +23,82 @@ describe 'Просмотр пользовательских данных api/v1/
     before(:all) { auth.auth_as(role) }
 
     context 'api/v1/users/{user_id}' do
-      before(:all) do
-        @res_by_user_id = users.users(@user_id).signed_request.perform
-      end
+      let(:res_by_user_id) { users.users(@user_id).request }
 
       it 'response code 200' do
-        expect(@res_by_user_id.code).to eql(200)
+        expect(res_by_user_id.code).to eql(200)
       end
 
       it "show_email?=#{show}" do
-        expect(@res_by_user_id.parse_body['user']['email'].include?('*'))
+        expect(res_by_user_id.parse_body['user']['email'].include?('*'))
           .to be(!show)
       end
 
       it "show_phone?=#{show}" do
-        expect(@res_by_user_id.parse_body['user']['phone'].include?('*'))
+        expect(res_by_user_id.parse_body['user']['phone'].include?('*'))
           .to be(!show)
       end
 
       it "show_profile[contacts]?=#{show}" do
         expect(
-          @res_by_user_id.parse_body['user']['profile']['contacts'].include?('*')
+          res_by_user_id.parse_body['user']['profile']['contacts'].include?('*')
         ).to be(!show)
       end
     end
 
     context 'api/v1/users?email={email}' do
-      before(:all) do
-        @res_by_email = users.user_info(email: @email).signed_request.perform
-      end
+      let(:res_by_email) { users.user_info(email: @email).request }
 
       it 'response code 200' do
-        expect(@res_by_email.code).to eql(200)
+        expect(res_by_email.code).to eql(200)
       end
 
       it "show_email?=#{show}" do
-        expect(@res_by_email.parse_body['users'][0]['email'].include?('*'))
+        expect(res_by_email.parse_body['users'][0]['email'].include?('*'))
           .to be(!show)
       end
 
       it "show_phone?=#{show}" do
-        expect(@res_by_email.parse_body['users'][0]['phone'].include?('*'))
+        expect(res_by_email.parse_body['users'][0]['phone'].include?('*'))
           .to be(!show)
       end
 
       it "show_profile[contacts]?=#{show}" do
         expect(
-          @res_by_email.parse_body['users'][0]['profile']['contacts'].include?('*')
+          res_by_email.parse_body['users'][0]['profile']['contacts'].include?('*')
         ).to be(!show)
       end
     end
+
+    after(:all) { auth.log_out }
   end
 
-  context 'Владельцем' do
+  context 'когда владелец' do
     include_examples 'data availability', 'incorrect', true
   end
 
-  context 'Сторонним пользователем' do
+  context 'когда сторонний пользователь' do
     include_examples 'data availability', 'user', false
   end
 
-  context 'Админом' do
+  context 'когда админ' do
     include_examples 'data availability', 'company', true
   end
 
-  context 'Неавторизованнм пользователем' do
-    before(:all) do
-      auth.auth_as('user')
-      @res_by_user_id = users.users(@user_id).request.perform
-      @res_by_email = users.user_info(email: @email).request.perform
-    end
+  context 'когда неавторизован' do
+    let(:res_by_user_id) { users.users(@user_id).request(sign: false) }
+    let(:res_by_email) { users.user_info(email: @email).request(sign: false) }
 
     it '/{user_id} 403' do
-      expect(@res_by_user_id.code).to eql(403)
+      expect(res_by_user_id.code).to eql(403)
     end
 
     it '?email={email} 200' do
-      expect(@res_by_email.code).to eql(200)
+      expect(res_by_email.code).to eql(200)
     end
 
     it '?email={email} show_email?=false' do
-      expect(@res_by_email.parse_body['users'][0]['email'])
+      expect(res_by_email.parse_body['users'][0]['email'])
         .to include('*')
     end
   end

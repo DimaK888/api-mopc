@@ -5,16 +5,14 @@ include Authorization
 auth = AuthNewApi.new
 users = Users.new
 
-describe 'Авторизация в новом АПИ' do
+describe 'Авторизация в новом АПИ POST(/clients)' do
   shared_examples 'Авторизация с неверными данными' do |email, pswd|
     context 'Получим личные данные неавторизованного пользователя' do
-      before(:all) do
-        @user_info = users.user_info(email: email).request.perform
-      end
+      let(:user_info) { users.user_info(email: email).request }
 
       it "пользователя #{email} не существует (200)" do
-        expect(@user_info.code).to eq(200)
-        expect(@user_info.parse_body['users']).to be_empty
+        expect(user_info.code).to eq(200)
+        expect(user_info.parse_body['users']).to be_empty
       end
     end
 
@@ -27,24 +25,24 @@ describe 'Авторизация в новом АПИ' do
 
   shared_examples 'Авторизация с корректными данными' do |email, pswd|
     context "Авторизуемся под #{email}" do
-      before(:all) { @authorization = auth.auth(email, pswd) }
+      before(:all) do
+        auth.log_out
+        auth.auth(email, pswd)
+      end
 
       it 'успешно!' do
-        expect(@authorization.code).to be(200)
-        expect(@authorization.parse_body['client']).not_to be_empty
+        expect(Tokens.secret_token).not_to be_nil
       end
 
       it 'неавторизованный запрос users/{user_id} (403)' do
         expect(
-          users.users(Tokens.user_id).
-            request.perform.code
+          users.users(Tokens.user_id).request(sign: false).code
         ).to be(403)
       end
 
       it 'авторизованный запрос users/{user_id} (200)' do
         expect(
-          users.users(Tokens.user_id).
-            signed_request.perform.code
+          users.users(Tokens.user_id).request.code
         ).to be(200)
       end
 
@@ -60,8 +58,7 @@ describe 'Авторизация в новом АПИ' do
 
         it 'авторизация сохранена' do
           expect(
-            users.users(Tokens.user_id).
-              signed_request.perform.code
+            users.users(Tokens.user_id).request.code
           ).to be(200)
         end
       end

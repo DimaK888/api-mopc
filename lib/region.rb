@@ -1,8 +1,7 @@
 class Region
   def city_by_ip
     url = "#{new_api_url}/cities/current"
-    res = {method: :get, url: url}.request.
-      perform.parse_body['city']
+    res = {method: :get, url: url}.request.parse_body['city']
     {
       city_id: res['id'],
       city_name: res['name'],

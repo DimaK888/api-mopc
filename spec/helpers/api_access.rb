@@ -13,18 +13,16 @@ module ApiAccess
     URL.sub('www', 'api')
   end
 
-  def request
-    RestClient::Request.new(self)
-  end
+  def request(param = {})
+    request = RestClient::Request.new(self)
+    access_id = param.fetch :access_id, Tokens.access_id
+    secret_key = param.fetch :secret_token, Tokens.secret_token
+    sign = param.fetch :sign, true
 
-  def signed_request
-    access_id = Tokens.access_id
-    secret_key = Tokens.secret_token
-    if access_id && secret_key
-      ApiAuth.sign!(request, access_id, secret_key)
+    if !sign || access_id.nil? || secret_key.nil?
+      request.perform
     else
-      puts 'NOT AUTHORIZED'
-      request
+      ApiAuth.sign!(request, access_id, secret_key).perform
     end
   end
 

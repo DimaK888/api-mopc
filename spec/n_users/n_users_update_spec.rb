@@ -3,7 +3,7 @@ include Authorization
 auth = AuthNewApi.new
 users = Users.new
 
-describe 'Изменение пользовательских данных api/v1/users/{user_id}' do
+describe 'Изменение пользовательских данных POST(users/{user_id})' do
   before(:all) do
     email = Faker::Internet.email
     param = {
@@ -13,12 +13,12 @@ describe 'Изменение пользовательских данных api/v
         name: Ryba::Name.full_name
       }
     }
-    users.user_registration(param).request.perform
+    users.user_registration(param).request
     auth.auth(email, 'qwer')
     @user_id = Tokens.user_id
   end
 
-  context 'владельцем' do
+  context 'когда владелец' do
     before(:all) do
       @param = {
         name: Ryba::Name.full_name,
@@ -36,8 +36,7 @@ describe 'Изменение пользовательских данных api/v
         }
       }
 
-      @changes = users.user_update(@param).
-        signed_request.perform.parse_body['user']
+      @changes = users.user_update(@param).request.parse_body['user']
     end
 
     it 'успешная смена name' do
@@ -96,22 +95,11 @@ describe 'Изменение пользовательских данных api/v
     end
   end
 
-  context 'неавторизованным пользователем' do
-    before(:all) do
-      param = {name: Ryba::Name.full_name}
-      @changes = users.user_update(param, @user_id).request.perform
-    end
-
-    it '403' do
-      expect(@changes.code).to eql(403)
-    end
-  end
-
-  context 'сторонним авторизованным' do
+  context 'когда сторонний пользователь' do
     before(:all) do
       auth.auth_as('user')
       param = {name: Ryba::Name.full_name}
-      @changes = users.user_update(param, @user_id).signed_request.perform
+      @changes = users.user_update(param, @user_id).request
     end
 
     it '403' do
@@ -119,11 +107,23 @@ describe 'Изменение пользовательских данных api/v
     end
   end
 
-  context 'авторизованным админом' do
+  context 'когда админ' do
     before(:all) do
       auth.auth_as('company')
       param = {name: Ryba::Name.full_name}
-      @changes = users.user_update(param, @user_id).signed_request.perform
+      @changes = users.user_update(param, @user_id).request
+    end
+
+    it '403' do
+      expect(@changes.code).to eql(403)
+    end
+  end
+
+  context 'когда неавторизован' do
+    before(:all) do
+      auth.log_out
+      param = {name: Ryba::Name.full_name}
+      @changes = users.user_update(param, @user_id).request(sign: false)
     end
 
     it '403' do
