@@ -18,7 +18,7 @@ describe 'Регистрация пользователя api/v1/users' do
         login = param[:email] || param[:phone]
         auth.auth(login, param[:password])
 
-        user_id = Token.token['user_id']
+        user_id = Tokens.user_id
         @new_user_email = users.users(user_id).
           signed_request.perform.
           parse_body['user']
@@ -27,7 +27,7 @@ describe 'Регистрация пользователя api/v1/users' do
       end
 
       it 'успешно!' do
-        expect(Token.token).not_to be_empty
+        expect(Tokens.secret_token).not_to be_empty
         expect(@new_user_email).to have_value(@login)
       end
     end
@@ -82,7 +82,7 @@ describe 'Регистрация пользователя api/v1/users' do
                        }
       context 'Получим информацию о пользователе' do
         before(:all) do
-          @info = users.users(Token.token['user_id']).
+          @info = users.users(Tokens.user_id).
             signed_request.perform.parse_body['user']
         end
 

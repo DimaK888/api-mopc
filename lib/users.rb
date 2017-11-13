@@ -1,9 +1,9 @@
 class Users
   def users_url
-    "#{URL}/api/v1/users"
+    "#{new_api_url}/users"
   end
 
-  def users(user_id = Token.token['user_id'])
+  def users(user_id = Tokens.user_id)
     {method: :get, url: "#{users_url}/#{user_id}"}
   end
 
@@ -18,7 +18,7 @@ class Users
     {method: :get, url: @url}
   end
 
-  def user_update(payload, user_id = Token.token['user_id'])
+  def user_update(payload, user_id = Tokens.user_id)
     {method: :put, url: "#{users_url}/#{user_id}", payload: payload}
   end
 

@@ -1,7 +1,7 @@
 module Authorization
   class AuthNewApi
     def auth_url
-      "#{URL}/api/v1/clients"
+      "#{new_api_url}/clients"
     end
 
     def basic_auth(email, password)
@@ -26,7 +26,7 @@ module Authorization
       }
       req = option.request.perform
       unless req.parse_body['client'].nil?
-        Token.token = req.parse_body['client']
+        Tokens.init(req.parse_body['client'])
       end
       req
     end
@@ -38,27 +38,34 @@ module Authorization
     def refresh_token
       option = {
         method: :post,
-        url: "#{auth_url}/#{Token.token['access_id']}/tokens",
-        payload: {refresh_token: Token.token['refresh_token']}
+        url: "#{auth_url}/#{Tokens.access_id}/tokens",
+        payload: {refresh_token: Tokens.refresh_token}
       }
       req = option.request.perform
       unless req.parse_body['client'].nil?
-        Token.token = req.parse_body['client']
+        Tokens.init(req.parse_body['client'])
       end
       req
     end
 
     def log_out
-      Token.token = {}
+      Tokens.init({})
     end
   end
 
   class AuthOldApi
   end
 
-  class Token
+  class Tokens
     class << self
-      attr_accessor :token
+      attr_accessor :user_id, :access_id, :secret_token, :refresh_token
+
+      def init(token)
+        @user_id = token['user_id']
+        @access_id = token['access_id']
+        @secret_token = token['secret_token']
+        @refresh_token = token['refresh_token']
+      end
     end
   end
 end

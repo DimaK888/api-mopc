@@ -16,7 +16,7 @@ describe 'Просмотр пользовательских данных api/v1/
     }
     users.user_registration(param).request.perform
     auth.auth(@email, 'qwer')
-    @user_id ||= Token.token['user_id']
+    @user_id ||= Tokens.user_id
   end
 
   shared_examples 'data availability' do |role, show|
@@ -81,23 +81,6 @@ describe 'Просмотр пользовательских данных api/v1/
 
   context 'Сторонним пользователем' do
     include_examples 'data availability', 'user', false
-    context 'когда владелец разрешил просмотр данных' do
-      before(:all) do
-        auth.auth(@email, 'qwer')
-        param = {profile_attributes: {show_email: true}}
-        users.user_update(param).signed_request.perform.parse_body['user']
-        auth.log_out
-      end
-
-      include_examples 'data availability', 'user', true
-
-      after(:all) do
-        auth.auth(@email, 'qwer')
-        param = {profile_attributes: {show_email: false}}
-        users.user_update(param).signed_request.perform.parse_body['user']
-        auth.log_out
-      end
-    end
   end
 
   context 'Админом' do

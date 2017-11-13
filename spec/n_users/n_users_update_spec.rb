@@ -15,7 +15,7 @@ describe 'Изменение пользовательских данных api/v
     }
     users.user_registration(param).request.perform
     auth.auth(email, 'qwer')
-    @user_id = Token.token['user_id']
+    @user_id = Tokens.user_id
   end
 
   context 'владельцем' do

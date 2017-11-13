@@ -36,31 +36,31 @@ describe 'Авторизация в новом АПИ' do
 
       it 'неавторизованный запрос users/{user_id} (403)' do
         expect(
-          users.users(Token.token['user_id']).
+          users.users(Tokens.user_id).
             request.perform.code
         ).to be(403)
       end
 
       it 'авторизованный запрос users/{user_id} (200)' do
         expect(
-          users.users(Token.token['user_id']).
+          users.users(Tokens.user_id).
             signed_request.perform.code
         ).to be(200)
       end
 
       context 'Обновим токен' do
         before(:all) do
-          @old_secret_token = Token.token['secret_token']
+          @old_secret_token = Tokens.secret_token
           auth.refresh_token
         end
 
         it 'secret_token сменился' do
-          expect(@old_secret_token).not_to eql(Token.token['secret_token'])
+          expect(@old_secret_token).not_to eql(Tokens.secret_token)
         end
 
         it 'авторизация сохранена' do
           expect(
-            users.users(Token.token['user_id']).
+            users.users(Tokens.user_id).
               signed_request.perform.code
           ).to be(200)
         end
