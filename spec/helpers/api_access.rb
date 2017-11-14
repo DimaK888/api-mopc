@@ -6,11 +6,26 @@ require_relative '../../lib/auth'
 
 module ApiAccess
   def new_api_url
-    RestClient.normalize_url("#{URL}/api/v1")
+    normalize_url("#{URL}/api/v1")
   end
 
   def old_api_url
-    RestClient.normalize_url(URL.sub('www', 'api'))
+    normalize_url(URL.sub('www', 'api'))
+  end
+
+  def normalize_url(url)
+    url = 'http://' + url unless url.match(%r{\A[a-z][a-z0-9+.-]*://}i)
+    url
+  end
+
+  def url_collector(url, param={})
+    str = url
+    if param.empty?
+      str
+    else
+      str << '?' << param.sort.
+        map{ |key, value| "#{key}=#{URI.encode(value.to_s)}" }.join('&')
+    end
   end
 
   def request(param = {})
@@ -42,7 +57,7 @@ module ApiAccess
 
   class SignOldApi
     class << self
-      attr_accessor :token, :cookies
+      attr_accessor :token, :cookies, :ttl
 
       def dont_check_signature
         if self.class == Hash
@@ -55,28 +70,27 @@ module ApiAccess
         end
       end
 
-      def get_sign
-        res = {method: :get, url: "#{old_api_url}/hello"}.request(sign: false)
-        @token = res.parse_body['content']['token']
-        @cookies = res.cookies
+      def get_token
+        if @token.nil? || @ttl.nil? || @ttl <= Time.now
+          res = {method: :get, url: "#{old_api_url}/hello"}.request(sign: false)
+          @ttl = Time.now + res.parse_body['content']['ttl']
+          @token = res.parse_body['content']['token']
+          @cookies = res.cookies
+        end
       end
 
-      def old_api_signature(url)
-        get_sign
-        temp_url =
-            if url.size > @token.size
-              url[@token.size - 1] += @token
-              url
-            else
-              url += @token
-            end
-        Digest::MD5.hexdigest temp_url.to_s
-      end
-
-      def info # example
-        url = "#{old_api_url}/info"
-        sign = old_api_signature(url.dup)
-        {method: :get, url: "#{url}?sign=#{sign}", cookies: @cookies}.request
+      def old_api_sign(url, params = {})
+        get_token
+        str = url
+        str << params.
+          reject{ |key, _| %W{img sign}.include?(key.to_s) }.sort.
+          map{ |key, value| [key.to_s, URI.encode(value.to_s)] }.join
+        if str.size > @token.size
+          str.insert(@token.size, @token)
+        else
+          str << @token
+        end
+        Digest::MD5.hexdigest(str)
       end
     end
   end

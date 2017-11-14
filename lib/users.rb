@@ -8,14 +8,7 @@ class Users
   end
 
   def user_info(param)
-    @url = "#{users_url}?"
-    param.each_pair do |key, value|
-      unless value.nil? || value.empty?
-        @url += '&' if @url[-1] != '?'
-        @url += "#{key}=#{value}"
-      end
-    end
-    {method: :get, url: @url}
+    {method: :get, url: url_collector(users_url, param)}
   end
 
   def user_update(payload, user_id = Tokens.user_id)
