@@ -19,13 +19,16 @@ module ApiAccess
   end
 
   def url_collector(url, param={})
-    str = url
     param = param.map do |key, value|
       next if key.to_s.empty? || value.to_s.empty?
       "#{key}=#{URI.encode(value.to_s)}"
     end
     param = param.reject(&:nil?).join('&')
-    param.empty? ? str : "#{str}?#{param}"
+    if param.empty?
+      url
+    else
+      "#{url}#{url.include?('&')?'&':'?'}#{param}"
+    end
   end
 
   def request(param = {})
@@ -59,20 +62,14 @@ module ApiAccess
     class << self
       attr_accessor :token, :cookies, :ttl
 
-      def dont_check_signature
-        if self.class == Hash
-          url = "#{self[:url]}&check_signature=0"
-          self.merge!({url: url})
-        elsif self.class == String
-          "#{self}&check_signature=0"
-        else
-          '&check_signature=0'
-        end
+      def dont_check_signature(url, param={})
+        param.merge!(sheck_signature: 0)
+        url_collector(url, param)
       end
 
       def get_token
         if @token.nil? || @ttl.nil? || @ttl <= Time.now
-          res = {method: :get, url: "#{old_api_url}/hello"}.request(sign: false)
+          res = RestClient.get("#{old_api_url}/hello")
           @ttl = Time.now + res.parse_body['content']['ttl']
           @token = res.parse_body['content']['token']
           @cookies = res.cookies
@@ -83,8 +80,8 @@ module ApiAccess
         get_token
         str = url
         str << params.
-          reject{ |key, _| %W{img sign}.include?(key.to_s) }.sort.
-          map{ |key, value| [key.to_s, URI.encode(value.to_s)] }.join
+          reject { |key, _| %w(img sign).include?(key.to_s) }.sort.
+          map { |key, value| [key.to_s, URI.encode(value.to_s)] }.join
         if str.size > @token.size
           str.insert(@token.size, @token)
         else

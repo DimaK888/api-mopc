@@ -98,7 +98,7 @@ describe 'Изменение пользовательских данных POST(
   context 'когда сторонний пользователь' do
     before(:all) do
       auth.auth_as('user')
-      param = {name: Ryba::Name.full_name}
+      param = { name: Ryba::Name.full_name }
       @changes = users.user_update(param, @user_id).request
     end
 
@@ -108,7 +108,7 @@ describe 'Изменение пользовательских данных POST(
   context 'когда админ' do
     before(:all) do
       auth.auth_as('company')
-      param = {name: Ryba::Name.full_name}
+      param = { name: Ryba::Name.full_name }
       @changes = users.user_update(param, @user_id).request
     end
 
@@ -118,7 +118,7 @@ describe 'Изменение пользовательских данных POST(
   context 'когда неавторизован' do
     before(:all) do
       auth.log_out
-      param = {name: Ryba::Name.full_name}
+      param = { name: Ryba::Name.full_name }
       @changes = users.user_update(param, @user_id).request(sign: false)
     end
 

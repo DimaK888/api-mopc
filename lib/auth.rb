@@ -39,7 +39,7 @@ module Authorization
       option = {
         method: :post,
         url: "#{auth_url}/#{Tokens.access_id}/tokens",
-        payload: {refresh_token: Tokens.refresh_token}
+        payload: { refresh_token: Tokens.refresh_token }
       }
       req = option.request
       unless req.parse_body['client'].nil?
