@@ -54,6 +54,10 @@ module Authorization
   end
 
   class AuthOldApi
+    def auth_url
+      "#{old_api_url}/clients"
+    end
+
   end
 
   class Tokens
