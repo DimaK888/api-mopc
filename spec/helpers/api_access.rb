@@ -20,12 +20,12 @@ module ApiAccess
 
   def url_collector(url, param={})
     str = url
-    if param.empty?
-      str
-    else
-      str << '?' << param.sort.
-        map{ |key, value| "#{key}=#{URI.encode(value.to_s)}" }.join('&')
+    param = param.map do |key, value|
+      next if key.to_s.empty? || value.to_s.empty?
+      "#{key}=#{URI.encode(value.to_s)}"
     end
+    param = param.reject(&:nil?).join('&')
+    param.empty? ? str : "#{str}?#{param}"
   end
 
   def request(param = {})
