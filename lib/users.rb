@@ -27,4 +27,15 @@ class Users
     phone[0] = '+7' if phone[0] == '8'
     phone.delete('- ')
   end
+  # old_api
+  def registration(params)
+    url = "#{old_api_url}/registration"
+    sign = SignOldApi.old_api_sign(url, params)
+    {
+      method: :post,
+      url: url,
+      payload: params.merge(sign: sign),
+      cookies: SignOldApi.cookies
+    }
+  end
 end

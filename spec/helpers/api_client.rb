@@ -78,7 +78,7 @@ module ApiClient
 
       def old_api_sign(url, params = {})
         get_token
-        str = url
+        str = url.dup
         str << params.
           reject { |key, _| %w(img sign).include?(key.to_s) }.sort.
           map { |key, value| [key.to_s, URI.encode(value.to_s)] }.join
