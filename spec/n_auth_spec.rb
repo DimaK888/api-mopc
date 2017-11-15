@@ -1,7 +1,3 @@
-require 'spec_helper'
-
-include Authorization
-
 auth = AuthNewApi.new
 users = Users.new
 
@@ -27,7 +23,7 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
   shared_examples 'Авторизация с корректными данными' do |email, pswd|
     context "Авторизуемся под #{email}" do
       before(:all) do
-        auth.log_out
+        log_out
         auth.auth(email, pswd)
       end
 
@@ -63,7 +59,7 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
           ).to response_code(200)
         end
       end
-      after(:all) { auth.log_out }
+      after(:all) { log_out }
     end
   end
 

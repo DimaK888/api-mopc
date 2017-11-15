@@ -1,5 +1,3 @@
-include Authorization
-
 auth = AuthNewApi.new
 users = Users.new
 
@@ -27,7 +25,7 @@ describe 'Изменение пользовательских данных POST(
         profile_attributes: {
           gender: [true, false].sample,
           birthday: Date.new(rand(1900..2100), rand(1..12), rand(1..28)).to_s,
-          city_id: Region.new.city_by_ip[:city_id],
+          city_id: Regions.new.city_by_ip[:city_id],
           about: Faker::Lorem.paragraph,
           contacts: users.expected_phone,
           position: Faker::StarWars.character,
@@ -125,5 +123,5 @@ describe 'Изменение пользовательских данных POST(
     it { expect(@changes).to response_code(403) }
   end
 
-  after(:all) { auth.log_out }
+  after(:all) { log_out }
 end

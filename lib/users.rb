@@ -7,8 +7,8 @@ class Users
     { method: :get, url: "#{users_url}/#{user_id}" }
   end
 
-  def user_info(param)
-    { method: :get, url: url_collector(users_url, param) }
+  def user_info(params)
+    { method: :get, url: url_collector(users_url, params) }
   end
 
   def user_update(payload, user_id = Tokens.user_id)
@@ -19,8 +19,8 @@ class Users
     { method: :get, url: "#{users_url}/#{user_id}/companies" }
   end
 
-  def user_registration(param)
-    { method: :post, url: users_url, payload: param }
+  def user_registration(params)
+    { method: :post, url: users_url, payload: params }
   end
 
   def expected_phone(phone = random_mobile_phone)

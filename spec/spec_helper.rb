@@ -8,8 +8,9 @@ require 'yaml'
 Dir['**/spec/helpers/*.rb'].each { |file| require file[5..-1] }
 Dir['**/lib/**/*.rb'].each { |file| require file[4..-1] }
 
-include ApiAccess
+include ApiClient
 include ApplicationHelper
+include Authorization
 
 ::CREDENTIALS = YAML.safe_load(File.read('lib/configs/credentials.yml'))
 ::URL = YAML.safe_load(File.read('lib/configs/env.yml'))['url']

@@ -1,5 +1,3 @@
-include Authorization
-
 auth = AuthNewApi.new
 users = Users.new
 
@@ -66,7 +64,7 @@ describe 'Просмотр пользовательских данных GET(/us
       end
     end
 
-    after(:all) { auth.log_out }
+    after(:all) { log_out }
   end
 
   context 'когда владелец' do

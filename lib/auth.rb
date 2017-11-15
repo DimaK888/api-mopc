@@ -1,16 +1,22 @@
 module Authorization
+  def basic_auth(email, password)
+    self.merge(
+        {
+            user: email,
+            password: password
+        }
+    ).request(sign: false)
+  end
+
+  def log_out
+    Tokens.init({})
+    SignOldApi.cookies = nil
+    SignOldApi.ttl = nil
+  end
+
   class AuthNewApi
     def auth_url
       "#{new_api_url}/clients"
-    end
-
-    def basic_auth(email, password)
-      self.merge(
-        {
-          user: email,
-          password: password
-        }
-      ).request(sign: false)
     end
 
     def auth(login, password)
@@ -31,10 +37,6 @@ module Authorization
       req
     end
 
-    def auth_as(role)
-      auth(CREDENTIALS[role]['email'], CREDENTIALS[role]['pswd'])
-    end
-
     def refresh_token
       option = {
         method: :post,
@@ -48,16 +50,35 @@ module Authorization
       req
     end
 
-    def log_out
-      Tokens.init({})
+    def auth_as(role)
+      auth(CREDENTIALS[role]['email'], CREDENTIALS[role]['pswd'])
     end
   end
 
   class AuthOldApi
     def auth_url
-      "#{old_api_url}/clients"
+      "#{old_api_url}/login"
     end
 
+    def auth(login, password)
+      option = {
+        method: :post,
+        url: auth_url,
+        payload: {
+          email: login,
+          password: password,
+          sign: SignOldApi.old_api_sign(auth_url, {email: login, password: password})
+        },
+        cookies: SignOldApi.cookies
+      }
+      req = option.request(sign: false)
+      SignOldApi.cookies = {'X-Test': '1728'}.merge!(req.cookies)
+      req
+    end
+
+    def auth_as(role)
+      auth(CREDENTIALS[role]['email'], CREDENTIALS[role]['pswd'])
+    end
   end
 
   class Tokens

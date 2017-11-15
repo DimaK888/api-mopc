@@ -72,7 +72,7 @@ module ApiClient
           res = RestClient.get("#{old_api_url}/hello")
           @ttl = Time.now + res.parse_body['content']['ttl']
           @token = res.parse_body['content']['token']
-          @cookies = res.cookies
+          @cookies = {'X-Test': '1728'}.merge!(res.cookies)
         end
       end
 

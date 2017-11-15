@@ -1,5 +1,3 @@
-include Authorization
-
 auth = AuthNewApi.new
 users = Users.new
 phone = random_mobile_phone
@@ -19,7 +17,7 @@ describe 'Регистрация пользователя POST(/users)' do
 
     context 'авторизация прошла' do
       before(:all) do
-        auth.log_out
+        log_out
         login = param[:email] || param[:phone]
         auth.auth(login, param[:password])
 
@@ -177,5 +175,5 @@ describe 'Регистрация пользователя POST(/users)' do
                      {}
   end
 
-  after(:all) { auth.log_out }
+  after(:all) { log_out }
 end
