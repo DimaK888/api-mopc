@@ -1,9 +1,3 @@
-require 'rest-client'
-require 'api-auth'
-require 'json'
-
-require_relative '../../lib/auth'
-
 module ApiClient
   def new_api_url
     normalize_url("#{URL}/api/v1")
@@ -76,7 +70,7 @@ module ApiClient
         end
       end
 
-      def old_api_sign(url, params = {})
+      def get_sign(url, params = {})
         get_token
         str = url.dup
         str << params.
@@ -88,6 +82,26 @@ module ApiClient
           str << @token
         end
         Digest::MD5.hexdigest(str)
+      end
+
+      def signed_request(params)
+        url = params.fetch :url
+        payload  = params.fetch :payload, {}
+        url_params = params.fetch :url_params, {}
+
+        case params[:method]
+        when :get
+          sign = get_sign(url, url_params)
+          url_params.merge!(sign: sign)
+          params.merge!(url: url_collector(url, url_params))
+        when :post
+          sign = get_sign(url, payload.merge(url_params))
+          params[:payload].merge!(sign: sign)
+        else
+          params
+        end
+        params.delete(url_params)
+        params.merge!(cookies: @cookies)
       end
     end
   end

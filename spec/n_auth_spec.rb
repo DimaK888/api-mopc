@@ -1,10 +1,12 @@
 auth = AuthNewApi.new
-users = Users.new
+users = Users::NewApiUsers.new
 
 describe 'Авторизация в новом АПИ POST(/clients)' do
   shared_examples 'Авторизация с неверными данными' do |email, pswd|
     context 'Получим личные данные неавторизованного пользователя' do
-      let(:user_info) { users.user_info(email: email).request }
+      before(:all) { log_out }
+
+      let(:user_info) { users.user_info(email: email) }
 
       it { expect(user_info).to response_code(200) }
 
@@ -25,22 +27,22 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
       before(:all) do
         log_out
         auth.auth(email, pswd)
+        @user_id ||= Tokens.user_id
       end
 
       it 'успешно!' do
         expect(Tokens.secret_token).not_to be_nil
       end
 
-      it 'неавторизованный запрос users/{user_id} (403)' do
-        expect(
-          users.users(Tokens.user_id).request(sign: false)
-        ).to response_code(403)
-      end
-
       it 'авторизованный запрос users/{user_id} (200)' do
-        expect(
-          users.users(Tokens.user_id).request
-        ).to response_code(200)
+        expect(users.users(@user_id)).to response_code(200)
+      end
+      context 'неавторизованный запрос users/{user_id} (403)' do
+        before(:all) { log_out }
+
+        it { expect(users.users(@user_id)).to response_code(403) }
+
+        after(:all) { auth.auth(email, pswd) }
       end
 
       context 'Обновим токен' do
@@ -54,9 +56,7 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
         end
 
         it 'авторизация сохранена' do
-          expect(
-            users.users(Tokens.user_id).request
-          ).to response_code(200)
+          expect(users.users(@user_id)).to response_code(200)
         end
       end
       after(:all) { log_out }
