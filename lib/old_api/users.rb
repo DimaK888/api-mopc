@@ -1,5 +1,5 @@
-module Users
-  class OldApiUsers
+module OldApi
+  class Users
     def registration(params)
       # params <= fio, email, password, password_confirmation
       req_param = {

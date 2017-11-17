@@ -1,5 +1,5 @@
-module Authorization
-  class AuthOldApi
+module OldApi
+  class Authorization
     def auth_url
       "#{old_api_url}/login"
     end

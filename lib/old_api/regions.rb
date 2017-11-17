@@ -1,5 +1,7 @@
-module Regions
-  class OldApiRegions
+module OldApi
+  class Regions
+    include Extensions::Regions
+
     def countries
       req_param = { method: :get, url: "#{old_api_url}/countries" }
       SignOldApi.signed_request(req_param).request

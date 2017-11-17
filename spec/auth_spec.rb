@@ -1,12 +1,12 @@
-auth = AuthNewApi.new
-users = Users::NewApiUsers.new
+new_api_auth = NewApi::Authorization.new
+new_api_users = NewApi::Users.new
 
 describe 'Авторизация в новом АПИ POST(/clients)' do
   shared_examples 'Авторизация с неверными данными' do |email, pswd|
     context 'Получим личные данные неавторизованного пользователя' do
       before(:all) { log_out }
 
-      let(:user_info) { users.user_info(email: email) }
+      let(:user_info) { new_api_users.user_info(email: email) }
 
       it { expect(user_info).to response_code(200) }
 
@@ -17,7 +17,7 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
 
     context 'Авторизация' do
       it 'response 404' do
-        expect(auth.auth(email, pswd)).to response_code(404)
+        expect(new_api_auth.auth(email, pswd)).to response_code(404)
       end
     end
   end
@@ -26,7 +26,7 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
     context "Авторизуемся под #{email}" do
       before(:all) do
         log_out
-        auth.auth(email, pswd)
+        new_api_auth.auth(email, pswd)
         @user_id ||= Tokens.user_id
       end
 
@@ -35,20 +35,20 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
       end
 
       it 'авторизованный запрос users/{user_id} (200)' do
-        expect(users.users(@user_id)).to response_code(200)
+        expect(new_api_users.users(@user_id)).to response_code(200)
       end
       context 'неавторизованный запрос users/{user_id} (403)' do
         before(:all) { log_out }
 
-        it { expect(users.users(@user_id)).to response_code(403) }
+        it { expect(new_api_users.users(@user_id)).to response_code(403) }
 
-        after(:all) { auth.auth(email, pswd) }
+        after(:all) { new_api_auth.auth(email, pswd) }
       end
 
       context 'Обновим токен' do
         before(:all) do
           @old_secret_token = Tokens.secret_token
-          auth.refresh_token
+          new_api_auth.refresh_token
         end
 
         it 'secret_token сменился' do
@@ -56,7 +56,7 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
         end
 
         it 'авторизация сохранена' do
-          expect(users.users(@user_id)).to response_code(200)
+          expect(new_api_users.users(@user_id)).to response_code(200)
         end
       end
       after(:all) { log_out }

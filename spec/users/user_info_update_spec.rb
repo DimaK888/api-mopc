@@ -1,7 +1,5 @@
-include Regions
-
-auth = AuthNewApi.new
-users = Users::NewApiUsers.new
+new_api_auth = NewApi::Authorization.new
+old_api_users = NewApi::Users.new
 
 describe 'Изменение пользовательских данных POST(users/{user_id})' do
   before(:all) do
@@ -15,9 +13,9 @@ describe 'Изменение пользовательских данных POST(
         name: Ryba::Name.full_name
       }
     }
-    users.registration(param)
+    old_api_users.registration(param)
 
-    auth.auth(email, 'qwer')
+    new_api_auth.auth(email, 'qwer')
     @user_id ||= Tokens.user_id
   end
 
@@ -30,16 +28,16 @@ describe 'Изменение пользовательских данных POST(
         profile_attributes: {
           gender: [true, false].sample,
           birthday: Date.new(rand(1900..2100), rand(1..12), rand(1..28)).to_s,
-          city_id: NewApiRegions.new.random_city[:id],
+          city_id: NewApi::Regions.new.random_city[:id],
           about: Faker::Lorem.paragraph,
-          contacts: users.expected_phone,
+          contacts: old_api_users.expected_phone,
           position: Faker::StarWars.character,
           show_email: [true, false].sample,
           additional_contacts: Faker::Lorem.paragraph
         }
       }
 
-      @changes = users.update(@param).parse_body['user']
+      @changes = old_api_users.update(@param).parse_body['user']
     end
 
     it 'успешная смена name' do
@@ -54,7 +52,7 @@ describe 'Изменение пользовательских данных POST(
 
     it 'успешная смена phone' do
       expect(@changes['phone']).
-        to eql(users.expected_phone(@param[:phone]))
+        to eql(old_api_users.expected_phone(@param[:phone]))
     end
 
     it 'успешная смена city_id' do
@@ -100,9 +98,9 @@ describe 'Изменение пользовательских данных POST(
 
   context 'когда сторонний пользователь' do
     before(:all) do
-      auth.auth_as('user')
+      new_api_auth.auth_as('user')
       param = { name: Ryba::Name.full_name }
-      @changes = users.update(param, @user_id)
+      @changes = old_api_users.update(param, @user_id)
     end
 
     it { expect(@changes).to response_code(403) }
@@ -110,9 +108,9 @@ describe 'Изменение пользовательских данных POST(
 
   context 'когда админ' do
     before(:all) do
-      auth.auth_as('company')
+      new_api_auth.auth_as('company')
       param = { name: Ryba::Name.full_name }
-      @changes = users.update(param, @user_id)
+      @changes = old_api_users.update(param, @user_id)
     end
 
     it { expect(@changes).to response_code(403) }
@@ -122,7 +120,7 @@ describe 'Изменение пользовательских данных POST(
     before(:all) do
       log_out
       param = { name: Ryba::Name.full_name }
-      @changes = users.update(param, @user_id)
+      @changes = old_api_users.update(param, @user_id)
     end
 
     it { expect(@changes).to response_code(403) }

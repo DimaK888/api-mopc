@@ -1,12 +1,10 @@
-include Users
-
-auth = AuthNewApi.new
-new_users = NewApiUsers.new
-old_users = OldApiUsers.new
+new_api_auth = NewApi::Authorization.new
+new_api_users = NewApi::Users.new
+old_api_users = OldApi::Users.new
 phone = random_mobile_phone
 auth_data = {
   phone: phone,
-  email: "#{new_users.expected_phone(phone).delete('+')}@pulscen.ru",
+  email: "#{new_api_users.expected_phone(phone).delete('+')}@pulscen.ru",
   pswd: 'qwer'
 }
 
@@ -16,18 +14,18 @@ describe 'Регистрация пользователя' do
       before(:all) { log_out }
 
       it 'регистрация прошла успешно' do
-        expect(new_users.registration(param)).to response_code(200)
+        expect(new_api_users.registration(param)).to response_code(200)
       end
 
       context 'авторизация прошла' do
         before(:all) do
           login = param[:email] || param[:phone]
-          auth.auth(login, param[:password])
+          new_api_auth.auth(login, param[:password])
 
           user_id = Tokens.user_id
-          @new_user_email = new_users.users(user_id).parse_body['user']
+          @new_user_email = new_api_users.users(user_id).parse_body['user']
 
-          @login = new_users.expected_phone(login)
+          @login = new_api_users.expected_phone(login)
         end
 
         it 'успешно!' do
@@ -41,7 +39,7 @@ describe 'Регистрация пользователя' do
       before(:all) do
         log_out
 
-        @response = new_users.registration(param)
+        @response = new_api_users.registration(param)
       end
 
       it 'регистрация прошла с ошибкой' do
@@ -84,7 +82,7 @@ describe 'Регистрация пользователя' do
                          }
         context 'Получим информацию о пользователе' do
           before(:all) do
-            @info = new_users.users(Tokens.user_id).parse_body['user']
+            @info = new_api_users.users(Tokens.user_id).parse_body['user']
           end
 
           it 'phone != profile[contacts]' do
@@ -96,7 +94,7 @@ describe 'Регистрация пользователя' do
       context 'когда регистрируем по example@pulscen.ru' do
         include_examples 'unsuccessfully post api/v1/users',
                          {
-                           email: "#{new_users.expected_phone.delete('+')}@pulscen.ru",
+                           email: "#{new_api_users.expected_phone.delete('+')}@pulscen.ru",
                            password: 'qwer',
                            profile_attributes: {
                                name: Ryba::Name.full_name
@@ -140,7 +138,7 @@ describe 'Регистрация пользователя' do
                        }
       context 'primary_provider: email' do
         before(:all) do
-          @user_info = new_users.users(Tokens.user_id).parse_body['user']
+          @user_info = new_api_users.users(Tokens.user_id).parse_body['user']
         end
 
         it { expect(@user_info['primary_provider']).to eql('email') }
@@ -186,7 +184,7 @@ describe 'Регистрация пользователя' do
     shared_examples 'successfully post /registration' do |param|
       before(:all) do
         log_out
-        @response = old_users.registration(param)
+        @response = old_api_users.registration(param)
       end
 
       it { expect(@response).to response_code(200) }
@@ -203,7 +201,7 @@ describe 'Регистрация пользователя' do
     shared_examples 'unsuccessfully post /registration' do |param|
       before(:all) do
         log_out
-        @response = old_users.registration(param)
+        @response = old_api_users.registration(param)
       end
 
       it { expect(@response).to response_code(200) }
@@ -250,7 +248,7 @@ describe 'Регистрация пользователя' do
       context 'phone@pulscen.ru' do
         include_examples 'unsuccessfully post /registration',
                          {
-                             email: "#{new_users.expected_phone.delete('+')}@pulscen.ru",
+                             email: "#{new_api_users.expected_phone.delete('+')}@pulscen.ru",
                              password: 'qwer',
                              fio: Ryba::Name.full_name
                          }

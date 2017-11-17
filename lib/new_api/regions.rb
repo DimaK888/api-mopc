@@ -1,14 +1,7 @@
-module Regions
-  def main_countries
-    [
-      {id: 24462, name: 'Россия'},
-      {id: 24463, name: 'Украина'},
-      {id: 10000, name: 'Беларусь'},
-      {id: 10003, name: 'Казахстан'}
-    ]
-  end
+module NewApi
+  class Regions
+    include Extensions::Regions
 
-  class NewApiRegions
     def city_by_ip
       url = "#{new_api_url}/cities/current"
       res = { method: :get, url: url }.request.parse_body['city']

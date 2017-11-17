@@ -1,5 +1,5 @@
-module Users
-  class NewApiUsers
+module NewApi
+  class Users
     def users_url
       "#{new_api_url}/users"
     end

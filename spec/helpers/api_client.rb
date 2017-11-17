@@ -52,6 +52,25 @@ module ApiClient
     nil
   end
 
+  def log_out
+    Tokens.init({})
+    SignOldApi.cookies = nil
+    SignOldApi.ttl = nil
+  end
+
+  class Tokens
+    class << self
+      attr_accessor :user_id, :access_id, :secret_token, :refresh_token
+
+      def init(token)
+        @user_id = token['user_id']
+        @access_id = token['access_id']
+        @secret_token = token['secret_token']
+        @refresh_token = token['refresh_token']
+      end
+    end
+  end
+
   class SignOldApi
     class << self
       attr_accessor :token, :cookies, :ttl

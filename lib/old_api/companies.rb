@@ -1,5 +1,5 @@
-module Company
-  class OldApiCompany
+module OldApi
+  class Companies
     def registration(params)
       # params <= name, name_rest, city_id, code, number
       req_param = {

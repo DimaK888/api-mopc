@@ -12,7 +12,6 @@ Dir['**/lib/**/*.rb'].each { |file| require file[4..-1] }
 
 include ApiClient
 include ApplicationHelper
-include Authorization
 
 ::CREDENTIALS = YAML.safe_load(File.read('lib/configs/credentials.yml'))
 ::URL = YAML.safe_load(File.read('lib/configs/env.yml'))['url']

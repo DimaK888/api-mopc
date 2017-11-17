@@ -1,20 +1,14 @@
-module Authorization
-  def basic_auth(email, password)
-    self.merge(
-      {
-        user: email,
-        password: password
-      }
-    ).request(sign: false)
-  end
+module NewApi
+  class Authorization
+    def basic_auth(email, password)
+      self.merge(
+          {
+              user: email,
+              password: password
+          }
+      ).request(sign: false)
+    end
 
-  def log_out
-    Tokens.init({})
-    SignOldApi.cookies = nil
-    SignOldApi.ttl = nil
-  end
-
-  class AuthNewApi
     def auth_url
       "#{new_api_url}/clients"
     end
@@ -52,19 +46,6 @@ module Authorization
 
     def auth_as(role)
       auth(CREDENTIALS[role]['email'], CREDENTIALS[role]['pswd'])
-    end
-  end
-
-  class Tokens
-    class << self
-      attr_accessor :user_id, :access_id, :secret_token, :refresh_token
-
-      def init(token)
-        @user_id = token['user_id']
-        @access_id = token['access_id']
-        @secret_token = token['secret_token']
-        @refresh_token = token['refresh_token']
-      end
     end
   end
 end
