@@ -6,6 +6,7 @@ require 'api-auth'
 require 'faker'
 require 'ryba'
 require 'yaml'
+require 'securerandom'
 
 Dir['**/spec/helpers/*.rb'].each { |file| require file[5..-1] }
 Dir['**/lib/**/*.rb'].each { |file| require file[4..-1] }

@@ -26,15 +26,15 @@ module OldApi
     end
 
     def countries_list
-      countries.parse_body['content']['countries']
+      countries.parse['content']['countries']
     end
 
     def provinces_list(country_id)
-      provinces(country_id).parse_body['content']['provinces']
+      provinces(country_id).parse['content']['provinces']
     end
 
     def cities_list(province_id)
-      cities(province_id).parse_body['content']['cities']
+      cities(province_id).parse['content']['cities']
     end
 
     def random_city

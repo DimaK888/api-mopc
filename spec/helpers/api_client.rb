@@ -26,7 +26,7 @@ module ApiClient
   end
 
   def request(param = {})
-    request = RestClient::Request.new(self)
+    request = RestClient::Request.new(self.merge(timeout: 7))
     access_id = param.fetch :access_id, Tokens.access_id
     secret_key = param.fetch :secret_token, Tokens.secret_token
     sign = param.fetch :sign, true
@@ -40,11 +40,14 @@ module ApiClient
 
   def perform
     self.execute
+  rescue RestClient::Exceptions::Timeout => err
+    puts 'Timeout'
+    return err.response
   rescue RestClient::ExceptionWithResponse => err
     return err.response
   end
 
-  def parse_body
+  def parse
     JSON.parse(self.body)
   end
 
@@ -60,13 +63,14 @@ module ApiClient
 
   class Tokens
     class << self
-      attr_accessor :user_id, :access_id, :secret_token, :refresh_token
+      attr_accessor :user_id, :access_id, :secret_token, :refresh_token, :device_id
 
       def init(token)
         @user_id = token['user_id']
         @access_id = token['access_id']
         @secret_token = token['secret_token']
         @refresh_token = token['refresh_token']
+        @device_id = token['device_id']
       end
     end
   end
@@ -83,8 +87,8 @@ module ApiClient
       def get_token
         if @token.nil? || @ttl.nil? || @ttl <= Time.now
           res = RestClient.get("#{old_api_url}/hello")
-          @ttl = Time.now + res.parse_body['content']['ttl']
-          @token = res.parse_body['content']['token']
+          @ttl = Time.now + res.parse['content']['ttl']
+          @token = res.parse['content']['token']
           @cookies = {'X-Test': '1728'}.merge!(res.cookies)
         end
       end

@@ -11,7 +11,7 @@ describe 'Авторизация в новом АПИ POST(/clients)' do
       it { expect(user_info).to response_code(200) }
 
       it "пользователя #{email} не существует" do
-        expect(user_info.parse_body['users']).to be_empty
+        expect(user_info.parse['users']).to be_empty
       end
     end
 

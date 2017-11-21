@@ -40,18 +40,18 @@ describe 'Просмотр пользовательских данных' do
         it { expect(res_by_user_id).to response_code(200) }
 
         it "show_email?=#{show}" do
-          expect(res_by_user_id.parse_body['user']['email'].include?('*'))
+          expect(res_by_user_id.parse['user']['email'].include?('*'))
             .to be(!show)
         end
 
         it "show_phone?=#{show}" do
-          expect(res_by_user_id.parse_body['user']['phone'].include?('*'))
+          expect(res_by_user_id.parse['user']['phone'].include?('*'))
             .to be(!show)
         end
 
         it "show_profile[contacts]?=#{show}" do
           expect(
-            res_by_user_id.parse_body['user']['profile']['contacts'].include?('*')
+            res_by_user_id.parse['user']['profile']['contacts'].include?('*')
           ).to be(!show)
         end
       end
@@ -62,18 +62,18 @@ describe 'Просмотр пользовательских данных' do
         it { expect(res_by_email).to response_code(200) }
 
         it "show_email?=#{show}" do
-          expect(res_by_email.parse_body['users'][0]['email'].include?('*'))
+          expect(res_by_email.parse['users'][0]['email'].include?('*'))
             .to be(!show)
         end
 
         it "show_phone?=#{show}" do
-          expect(res_by_email.parse_body['users'][0]['phone'].include?('*'))
+          expect(res_by_email.parse['users'][0]['phone'].include?('*'))
             .to be(!show)
         end
 
         it "show_profile[contacts]?=#{show}" do
           expect(
-              res_by_email.parse_body['users'][0]['profile']['contacts'].include?('*')
+              res_by_email.parse['users'][0]['profile']['contacts'].include?('*')
           ).to be(!show)
         end
       end
@@ -106,7 +106,7 @@ describe 'Просмотр пользовательских данных' do
       end
 
       it '?email={email} show_email?=false' do
-        expect(res_by_email.parse_body['users'][0]['email'])
+        expect(res_by_email.parse['users'][0]['email'])
           .to include('*')
       end
     end
@@ -127,7 +127,7 @@ describe 'Просмотр пользовательских данных' do
       it { expect(old_api_users.user_info).to response_code(200) }
 
       it "show user info? #=> #{show}" do
-        expect(old_api_users.user_info.parse_body['content'].nil?).not_to eql(show)
+        expect(old_api_users.user_info.parse['content'].nil?).not_to eql(show)
       end
     end
 

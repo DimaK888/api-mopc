@@ -4,7 +4,7 @@ module NewApi
 
     def city_by_ip
       url = "#{new_api_url}/cities/current"
-      res = { method: :get, url: url }.request.parse_body['city']
+      res = { method: :get, url: url }.request.parse['city']
       {
         city_id: res['id'],
         city_name: res['name'],
@@ -31,15 +31,15 @@ module NewApi
     end
 
     def countries_list
-      countries.parse_body['countries']
+      countries.parse['countries']
     end
 
     def provinces_list(country_id)
-      provinces(country_id).parse_body['provinces']
+      provinces(country_id).parse['provinces']
     end
 
     def cities_list(province_id)
-      cities(province_id).parse_body['cities']
+      cities(province_id).parse['cities']
     end
 
     def random_city
@@ -50,7 +50,15 @@ module NewApi
       path << province['name']
       city = cities_list(province['id']).sample
       path << city['name']
-      { id: city['id'], name: city['name'], path: path }
+      number_length = country[:phone_length] - city['phone_code'].size
+      {
+        id: city['id'],
+        name: city['name'],
+        path: path,
+        phone_code: city['phone_code'],
+        phone_number: '#' * number_length,
+        phone_length: country[:phone_length]
+      }
     end
   end
 end

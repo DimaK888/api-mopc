@@ -2,10 +2,10 @@ module NewApi
   class Authorization
     def basic_auth(email, password)
       self.merge(
-          {
-              user: email,
-              password: password
-          }
+        {
+          user: email,
+          password: password
+        }
       ).request(sign: false)
     end
 
@@ -21,12 +21,13 @@ module NewApi
           session: {
             login: login,
             password: password
-          }
+          },
+          device_id: SecureRandom.uuid
         }
       }
       req = option.request(sign: false)
-      unless req.parse_body['client'].nil?
-        Tokens.init(req.parse_body['client'])
+      unless req.parse['client'].nil?
+        Tokens.init(req.parse['client'])
       end
       req
     end
@@ -38,8 +39,8 @@ module NewApi
         payload: { refresh_token: Tokens.refresh_token }
       }
       req = option.request
-      unless req.parse_body['client'].nil?
-        Tokens.init(req.parse_body['client'])
+      unless req.parse['client'].nil?
+        Tokens.init(req.parse['client'])
       end
       req
     end

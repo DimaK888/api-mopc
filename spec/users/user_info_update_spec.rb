@@ -37,7 +37,7 @@ describe 'Изменение пользовательских данных POST(
         }
       }
 
-      @changes = old_api_users.update(@param).parse_body['user']
+      @changes = old_api_users.update(@param).parse['user']
     end
 
     it 'успешная смена name' do

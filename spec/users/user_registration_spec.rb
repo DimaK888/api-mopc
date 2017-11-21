@@ -23,7 +23,7 @@ describe 'Регистрация пользователя' do
           new_api_auth.auth(login, param[:password])
 
           user_id = Tokens.user_id
-          @new_user_email = new_api_users.users(user_id).parse_body['user']
+          @new_user_email = new_api_users.users(user_id).parse['user']
 
           @login = new_api_users.expected_phone(login)
         end
@@ -82,7 +82,7 @@ describe 'Регистрация пользователя' do
                          }
         context 'Получим информацию о пользователе' do
           before(:all) do
-            @info = new_api_users.users(Tokens.user_id).parse_body['user']
+            @info = new_api_users.users(Tokens.user_id).parse['user']
           end
 
           it 'phone != profile[contacts]' do
@@ -138,7 +138,7 @@ describe 'Регистрация пользователя' do
                        }
       context 'primary_provider: email' do
         before(:all) do
-          @user_info = new_api_users.users(Tokens.user_id).parse_body['user']
+          @user_info = new_api_users.users(Tokens.user_id).parse['user']
         end
 
         it { expect(@user_info['primary_provider']).to eql('email') }
@@ -190,11 +190,11 @@ describe 'Регистрация пользователя' do
       it { expect(@response).to response_code(200) }
 
       it 'message OK' do
-        expect(@response.parse_body['status']['message']).to eql('OK')
+        expect(@response.parse['status']['message']).to eql('OK')
       end
 
       it 'successful registration' do
-        expect(@response.parse_body['content']['user']).not_to be_empty
+        expect(@response.parse['content']['user']).not_to be_empty
       end
     end
 
@@ -207,50 +207,34 @@ describe 'Регистрация пользователя' do
       it { expect(@response).to response_code(200) }
 
       it 'error message' do
-        expect(@response.parse_body['status']['message']).not_to eql('OK')
+        expect(@response.parse['status']['message']).not_to eql('OK')
       end
 
       it 'unsuccessful registration' do
-        expect(@response.parse_body['content']).to be_nil
+        expect(@response.parse['content']).to be_nil
       end
     end
 
     context 'когда ввел все верно' do
       include_examples 'successfully post /registration',
-                       {
-                           email: Faker::Internet.email,
-                           password: 'qwer',
-                           password_confirmation: 'qwer',
-                           fio: Ryba::Name.full_name
-                       }
+                       {}
     end
 
     context 'когда пользователь существует' do
       include_examples 'unsuccessfully post /registration',
-                       {
-                           email: CREDENTIALS['company']['email'],
-                           password: 'qwer',
-                           password_confirmation: 'qwer',
-                           fio: Ryba::Name.full_name
-                       }
+                       { email: CREDENTIALS['company']['email'] }
     end
 
     context 'когда email' do
       context 'неправильный' do
         include_examples 'unsuccessfully post /registration',
-                         {
-                             email: CREDENTIALS['incorrect']['email'],
-                             password: 'qwer',
-                             fio: Ryba::Name.full_name
-                         }
+                         { email: CREDENTIALS['incorrect']['email'] }
       end
 
       context 'phone@pulscen.ru' do
         include_examples 'unsuccessfully post /registration',
                          {
-                             email: "#{new_api_users.expected_phone.delete('+')}@pulscen.ru",
-                             password: 'qwer',
-                             fio: Ryba::Name.full_name
+                           email: "#{new_api_users.expected_phone.delete('+')}@pulscen.ru"
                          }
       end
     end
@@ -258,20 +242,14 @@ describe 'Регистрация пользователя' do
     context 'когда password' do
       context 'короткий' do
         include_examples 'unsuccessfully post /registration',
-                         {
-                             email: Faker::Internet.email,
-                             password: 'qwe',
-                             fio: Ryba::Name.full_name
-                         }
+                         { password: 'qwe' }
       end
 
       context 'не равен password_confirmation' do
         include_examples 'successfully post /registration',
                          {
-                             email: Faker::Internet.email,
-                             password: 'qwer',
-                             password_confirmation: 'qwerty',
-                             fio: Ryba::Name.full_name
+                           password: 'qwer',
+                           password_confirmation: 'qwerty'
                          }
       end
     end
@@ -279,30 +257,17 @@ describe 'Регистрация пользователя' do
     context 'когда fio' do
       context 'не заполнено' do
         include_examples 'unsuccessfully post /registration',
-                         {
-                             email: Faker::Internet.email,
-                             password: 'qweк',
-                             fio: ''
-                         }
+                         { fio: '' }
       end
 
       context 'содержит английские буквы' do
         include_examples 'successfully post /registration',
-                         {
-                             email: Faker::Internet.email,
-                             password: 'qwer',
-                             password_confirmation: 'qwerty',
-                             fio: Faker::Name.name
-                         }
+                         { fio: Faker::Name.name }
       end
 
       context 'содержит иные символы (!"№%:,.;()_+=")' do
         include_examples 'unsuccessfully post /registration',
-                         {
-                             email: Faker::Internet.email,
-                             password: 'qweк',
-                             fio: '!"№%:,.;()_+="'
-                         }
+                         { fio: '!"№%:,.;()_+="' }
       end
     end
   end
