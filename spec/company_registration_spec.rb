@@ -1,5 +1,8 @@
+include Extensions::Regions
+
 old_api_auth = OldApi::Authorization.new
 old_api_company = OldApi::Companies.new
+old_api_reg = OldApi::Regions.new
 
 describe 'Регистрация компании' do
   context 'Старое АПИ POST(/company/registration)' do
@@ -56,14 +59,17 @@ describe 'Регистрация компании' do
 
         old_api_auth.auth_as_new_user
 
-        @phone_number = { code: '343', number: ('#' * 7).number_generator }
-        old_api_company.registration(@phone_number)
+        @params = {
+          city_id: old_api_reg.random_city(main_countries[0..2].sample)[:id],
+          code: '343',
+          number: ('#' * 7).number_generator
+        }
+        old_api_company.registration(@params)
       end
 
       context 'когда владелец' do
         before(:all) do
-          @relevant_company = old_api_company.
-            registration(@phone_number).
+          @relevant_company = old_api_company.registration(@params).
             parse['content']['relevant_companies'][0]
         end
 
@@ -74,8 +80,7 @@ describe 'Регистрация компании' do
         context 'создадим заявку на привязку' do
           before(:all) do
             @company_request = old_api_company.
-              company_request(company_id: @relevant_company['id']).
-              parse['status']
+              request(company_id: @relevant_company['id']).parse['status']
           end
 
           it 'status[code] 400' do
@@ -94,8 +99,7 @@ describe 'Регистрация компании' do
 
           old_api_auth.auth_as_new_user
 
-          @relevant_company = old_api_company.
-            registration(@phone_number).
+          @relevant_company = old_api_company.registration(@params).
             parse['content']['relevant_companies'][0]
         end
 
@@ -106,8 +110,7 @@ describe 'Регистрация компании' do
         context 'создадим заявку на привязку' do
           before(:all) do
             @company_request = old_api_company.
-              company_request(company_id: @relevant_company['id']).
-              parse['status']
+              request(company_id: @relevant_company['id']).parse['status']
           end
 
           it 'запрос на привязку создан' do

@@ -35,21 +35,25 @@ module NewApi
     end
 
     def provinces_list(country_id)
-      provinces(country_id).parse['provinces']
+      req = provinces(country_id).parse['provinces']
+      raise('PROVINCES LIST IS EMPTY!') if req.nil? || req.empty?
+      req
     end
 
     def cities_list(province_id)
-      cities(province_id).parse['cities']
+      req = cities(province_id).parse['cities']
+      raise('CITIES LIST IS EMPTY!') if req.nil? || req.empty?
+      req
     end
 
-    def random_city
+    def random_city(country = {})
       path = []
-      country = main_countries.sample
-      path << country[:name]
+      country = country.empty? ? main_countries.sample : country
+      path << country[:name].to_s
       province = provinces_list(country[:id]).sample
-      path << province['name']
+      path << province['name'].to_s
       city = cities_list(province['id']).sample
-      path << city['name']
+      path << city['name'].to_s
       number_length = country[:phone_length] - city['phone_code'].size
       {
         id: city['id'],

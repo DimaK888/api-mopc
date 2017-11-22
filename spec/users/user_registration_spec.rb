@@ -56,6 +56,14 @@ describe 'Регистрация пользователя' do
                            name: Ryba::Name.full_name
                          }
                        }
+
+      context 'primary_provider is email' do
+        before(:all) do
+          @user_info = new_api_users.users(Tokens.user_id).parse['user']
+        end
+
+        it { expect(@user_info['primary_provider']).to eql('email') }
+      end
     end
 
     context 'когда регистрируем по телефону' do
@@ -68,6 +76,45 @@ describe 'Регистрация пользователя' do
                              name: Ryba::Name.full_name
                            }
                          }
+
+        context 'primary_provider is phone' do
+          before(:all) do
+            @user_info = new_api_users.users(Tokens.user_id).parse['user']
+          end
+
+          it { expect(@user_info['primary_provider']).to eql('phone') }
+
+          context 'когда добавили email' do
+            before(:all) do
+              new_api_users.update(email: Faker::Internet.email)
+              @user_info = new_api_users.users(Tokens.user_id).parse['user']
+            end
+
+            it 'primary_provider is email' do
+              expect(@user_info['primary_provider']).to eql('email')
+            end
+          end
+        end
+      end
+
+      context 'когда регистрируем с указанием email и phone' do
+        include_examples 'successfully post api/v1/users',
+                         {
+                           email: Faker::Internet.email,
+                           phone: random_mobile_phone,
+                           password: 'qwer',
+                           profile_attributes: {
+                             name: Ryba::Name.full_name,
+                             contacts: random_mobile_phone
+                             }
+                         }
+        context 'primary_provider is email' do
+          before(:all) do
+            @user_info = new_api_users.users(Tokens.user_id).parse['user']
+          end
+
+          it { expect(@user_info['primary_provider']).to eql('email') }
+        end
       end
 
       context 'с полями phone & profile[contacts]' do
@@ -97,7 +144,7 @@ describe 'Регистрация пользователя' do
                            email: "#{new_api_users.expected_phone.delete('+')}@pulscen.ru",
                            password: 'qwer',
                            profile_attributes: {
-                               name: Ryba::Name.full_name
+                             name: Ryba::Name.full_name
                            }
                          }
       end
@@ -125,33 +172,13 @@ describe 'Регистрация пользователя' do
       end
     end
 
-    context 'когда регистрируем с указанием email и phone' do
-      include_examples 'successfully post api/v1/users',
-                       {
-                         email: Faker::Internet.email,
-                         phone: random_mobile_phone,
-                         password: 'qwer',
-                         profile_attributes: {
-                           name: Ryba::Name.full_name,
-                           contacts: random_mobile_phone
-                         }
-                       }
-      context 'primary_provider: email' do
-        before(:all) do
-          @user_info = new_api_users.users(Tokens.user_id).parse['user']
-        end
-
-        it { expect(@user_info['primary_provider']).to eql('email') }
-      end
-    end
-
     context 'когда пользователь(email) существует' do
       include_examples 'unsuccessfully post api/v1/users',
                        {
                          email: CREDENTIALS['company']['email'],
                          password: 'qwer',
                          profile_attributes: {
-                             name: Ryba::Name.full_name
+                           name: Ryba::Name.full_name
                          }
                        }
     end
